@@ -245,6 +245,6 @@ This project is private and intended for personal/business use.
 
 <div align="center">
 
-Made with ❤️ & chocolate by **Brownie Bliss**
+Made with ❤️ by Vishva & chocolate by **Brownie Bliss**
 
 </div>

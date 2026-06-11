@@ -1,0 +1,172 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Brownie Bliss Brand Colors */
+  --background: #FAF6F2;
+  --foreground: #2D1B14;
+  --card: #FFFFFF;
+  --card-foreground: #2D1B14;
+  --popover: #FFFFFF;
+  --popover-foreground: #2D1B14;
+  --primary: #4E342E;
+  --primary-foreground: #FFF8F0;
+  --secondary: #FFF8F0;
+  --secondary-foreground: #4E342E;
+  --muted: #F5EDE6;
+  --muted-foreground: #6D5D55;
+  --accent: #D4A373;
+  --accent-foreground: #2D1B14;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E8DDD4;
+  --input: #E8DDD4;
+  --ring: #C68642;
+  --chart-1: #4E342E;
+  --chart-2: #C68642;
+  --chart-3: #D4A373;
+  --chart-4: #4CAF50;
+  --chart-5: #2D1B14;
+  --radius: 1rem;
+  --sidebar: #FFF8F0;
+  --sidebar-foreground: #2D1B14;
+  --sidebar-primary: #4E342E;
+  --sidebar-primary-foreground: #FFF8F0;
+  --sidebar-accent: #F5EDE6;
+  --sidebar-accent-foreground: #4E342E;
+  --sidebar-border: #E8DDD4;
+  --sidebar-ring: #C68642;
+  
+  /* Custom Brand Tokens */
+  --chocolate: #4E342E;
+  --cocoa: #2D1B14;
+  --caramel: #C68642;
+  --cream: #FFF8F0;
+  --gold: #D4A373;
+  --success: #4CAF50;
+}
+
+.dark {
+  --background: #1A120E;
+  --foreground: #FFF8F0;
+  --card: #2D1B14;
+  --card-foreground: #FFF8F0;
+  --popover: #2D1B14;
+  --popover-foreground: #FFF8F0;
+  --primary: #D4A373;
+  --primary-foreground: #2D1B14;
+  --secondary: #3D2A24;
+  --secondary-foreground: #FFF8F0;
+  --muted: #3D2A24;
+  --muted-foreground: #A89A92;
+  --accent: #C68642;
+  --accent-foreground: #2D1B14;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #3D2A24;
+  --input: #3D2A24;
+  --ring: #C68642;
+  --chart-1: #D4A373;
+  --chart-2: #C68642;
+  --chart-3: #4E342E;
+  --chart-4: #4CAF50;
+  --chart-5: #FFF8F0;
+  --sidebar: #2D1B14;
+  --sidebar-foreground: #FFF8F0;
+  --sidebar-primary: #D4A373;
+  --sidebar-primary-foreground: #2D1B14;
+  --sidebar-accent: #3D2A24;
+  --sidebar-accent-foreground: #FFF8F0;
+  --sidebar-border: #3D2A24;
+  --sidebar-ring: #C68642;
+}
+
+@theme inline {
+  --font-sans: var(--font-inter), sans-serif;
+  --font-serif: var(--font-playfair), serif;
+  --font-mono: var(--font-mono), monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-foreground: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-chocolate: var(--chocolate);
+  --color-cocoa: var(--cocoa);
+  --color-caramel: var(--caramel);
+  --color-cream: var(--cream);
+  --color-gold: var(--gold);
+  --color-success: var(--success);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--caramel);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--chocolate);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+  background: var(--caramel);
+  color: var(--cocoa);
+}

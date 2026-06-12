@@ -319,7 +319,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       name: product.name,
       slug: product.slug,
       price: product.price,
-      image: product.image_url,
+      image: product.image_url ? product.image_url.split(',')[0].trim() : "",
     }
 
     const existingIndex = cart.findIndex((item) => item.product.id === product.id)
@@ -390,6 +390,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const reviewCount = reviews.length
   const avgRating = reviewCount > 0 ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1) : "0.0"
 
+  const productImages: string[] = product?.image_url
+    ? product.image_url.split(',').map((img: string) => img.trim()).filter(Boolean)
+    : []
+
   // Spec helper mapped to product category
   const specs = CATEGORY_SPECS[product?.category || "classic"] || CATEGORY_SPECS.classic
 
@@ -452,37 +456,24 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         <section className="relative w-full aspect-square bg-white border-b border-[#EDE5DC] overflow-hidden">
           <div ref={emblaRef} className="w-full h-full overflow-hidden">
             <div className="flex h-full">
-              {/* Image Slide 1 */}
-              <div className="flex-[0_0_100%] min-w-0 relative h-full">
-                {product.image_url ? (
-                  <Image
-                    src={product.image_url}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#F5EDE6] to-[#EFE4CC] text-cocoa/30 font-bold font-serif text-lg text-center">
-                    {product.name}
+              {productImages.length > 0 ? (
+                productImages.map((imgUrl: string, idx: number) => (
+                  <div key={idx} className="flex-[0_0_100%] min-w-0 relative h-full">
+                    <Image
+                      src={imgUrl}
+                      alt={`${product.name} view ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      priority={idx === 0}
+                      sizes="(max-width: 768px) 100vw, 600px"
+                    />
                   </div>
-                )}
-              </div>
-              {/* Image Slide 2 (Detail/Mock view for rich ecommerce feel) */}
-              <div className="flex-[0_0_100%] min-w-0 relative h-full">
-                {product.image_url ? (
-                  <Image
-                    src={product.image_url}
-                    alt={`${product.name} alternate view`}
-                    fill
-                    className="object-cover brightness-95 scale-102"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#FAF6F1] text-cocoa/40">
-                    Premium Quality
-                  </div>
-                )}
-              </div>
+                ))
+              ) : (
+                <div className="flex-[0_0_100%] min-w-0 relative h-full flex items-center justify-center bg-gradient-to-br from-[#F5EDE6] to-[#EFE4CC] text-cocoa/30 font-bold font-serif text-lg text-center">
+                  {product.name}
+                </div>
+              )}
             </div>
           </div>
 
@@ -503,18 +494,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           )}
 
           {/* Carousel Dot Indicators */}
-          <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-1.5 z-10">
-            {Array.from({ length: 2 }).map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => emblaApi?.scrollTo(idx)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  selectedIndex === idx ? "w-4 bg-chocolate" : "w-2 bg-chocolate/30"
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
+          {productImages.length > 1 && (
+            <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-1.5 z-10">
+              {productImages.map((_: string, idx: number) => (
+                <button
+                  key={idx}
+                  onClick={() => emblaApi?.scrollTo(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    selectedIndex === idx ? "w-4 bg-chocolate" : "w-2 bg-chocolate/30"
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ── SECTION 2: Product Information ── */}
@@ -903,7 +896,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 <div className="relative aspect-square w-full bg-[#FAF6F1] flex-shrink-0">
                   {p.image_url ? (
                     <Image
-                      src={p.image_url}
+                      src={p.image_url.split(',')[0].trim()}
                       alt={p.name}
                       fill
                       className="object-cover"

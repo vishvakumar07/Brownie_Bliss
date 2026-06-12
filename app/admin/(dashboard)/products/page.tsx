@@ -141,9 +141,11 @@ interface Product {
 function ImageUpload({
   value,
   onChange,
+  label = "Upload Photo",
 }: {
   value: string
   onChange: (dataUrl: string) => void
+  label?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -187,21 +189,18 @@ function ImageUpload({
   }
 
   return (
-    <div className="space-y-2">
-      <Label>Product Photo</Label>
-
+    <div className="space-y-1">
       {/* Drop Zone */}
       <div
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all overflow-hidden
+        className={`relative cursor-pointer rounded-xl border-2 border-dashed transition-all overflow-hidden h-28 flex flex-col items-center justify-center
           ${isDragging
             ? "border-chocolate bg-chocolate/5 scale-[1.01]"
             : "border-border hover:border-chocolate/50 hover:bg-chocolate/3"
           }
-          ${value ? "h-48" : "h-36"}
         `}
       >
         {value ? (
@@ -214,40 +213,26 @@ function ImageUpload({
               className="object-cover"
             />
             {/* Overlay on hover */}
-            <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-              <Upload className="w-5 h-5 text-white" />
-              <span className="text-white text-xs font-medium">Click to change photo</span>
+            <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1">
+              <Upload className="w-4 h-4 text-white" />
+              <span className="text-white text-[10px] font-medium text-center px-1">Change</span>
             </div>
             {/* Remove button */}
             <button
+              type="button"
               onClick={handleRemove}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors z-10"
+              className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors z-10"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3 h-3" />
             </button>
           </>
         ) : (
-          <div className="h-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
-            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-              <ImageIcon className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-medium">Click or drag &amp; drop to upload</p>
+          <div className="h-full flex flex-col items-center justify-center gap-1 text-muted-foreground p-2 text-center">
+            <ImageIcon className="w-4 h-4 text-muted-foreground/60" />
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80 leading-none">{label}</span>
+            <span className="text-[9px] text-muted-foreground/50 leading-tight">Drag or click</span>
           </div>
         )}
-      </div>
-
-      {/* Requirements */}
-      <div className="rounded-lg bg-muted/60 px-3 py-2.5 space-y-1">
-        <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-          Photo Requirements
-        </p>
-        <ul className="text-xs text-muted-foreground space-y-0.5">
-          <li>• <span className="font-medium text-foreground">Format:</span> JPG, PNG, or WEBP</li>
-          <li>• <span className="font-medium text-foreground">Aspect ratio:</span> 1:1 (square) — recommended for product catalog</li>
-          <li>• <span className="font-medium text-foreground">Min size:</span> 600 × 600 px for best quality</li>
-          <li>• <span className="font-medium text-foreground">Max file size:</span> 5 MB</li>
-          <li>• <span className="font-medium text-foreground">Background:</span> White or transparent preferred</li>
-        </ul>
       </div>
 
       <input
@@ -278,6 +263,8 @@ export default function ProductsManagementPage() {
     badge: "",
     category: "classic",
     image: "",
+    image2: "",
+    image3: "",
   })
 
   // Fetch products
@@ -376,12 +363,23 @@ export default function ProductsManagementPage() {
 
   const openAddDialog = () => {
     setEditingProduct(null)
-    setFormData({ name: "", description: "", price: "", stock: "", badge: "", category: "classic", image: "" })
+    setFormData({
+      name: "",
+      description: "",
+      price: "",
+      stock: "",
+      badge: "",
+      category: "classic",
+      image: "",
+      image2: "",
+      image3: "",
+    })
     setIsDialogOpen(true)
   }
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product)
+    const imgs = product.image ? product.image.split(',').map(s => s.trim()).filter(Boolean) : []
     setFormData({
       name: product.name,
       description: product.description,
@@ -389,7 +387,9 @@ export default function ProductsManagementPage() {
       stock: product.stock.toString(),
       badge: product.badge || "",
       category: product.category || "classic",
-      image: product.image,
+      image: imgs[0] || "",
+      image2: imgs[1] || "",
+      image3: imgs[2] || "",
     })
     setIsDialogOpen(true)
   }
@@ -426,10 +426,12 @@ export default function ProductsManagementPage() {
     e.preventDefault()
     setSubmitting(true)
     try {
-      let imageUrl = ""
-      if (formData.image) {
-        imageUrl = await uploadPhoto(formData.image)
-      }
+      const uploadedUrls = await Promise.all([
+        formData.image ? uploadPhoto(formData.image) : Promise.resolve(""),
+        formData.image2 ? uploadPhoto(formData.image2) : Promise.resolve(""),
+        formData.image3 ? uploadPhoto(formData.image3) : Promise.resolve(""),
+      ])
+      const imageUrl = uploadedUrls.filter(Boolean).join(",")
 
       if (editingProduct) {
         const { error } = await supabase
@@ -600,7 +602,7 @@ export default function ProductsManagementPage() {
                 <div className="relative w-full h-44 bg-[#FAF6F1]">
                   {product.image ? (
                     <Image
-                      src={product.image}
+                      src={product.image.split(',')[0].trim()}
                       alt={product.name}
                       fill
                       className="object-contain p-2"
@@ -719,11 +721,37 @@ export default function ProductsManagementPage() {
           </DialogHeader>
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Image Upload */}
-            <ImageUpload
-              value={formData.image}
-              onChange={(url) => setFormData({ ...formData, image: url })}
-            />
+            {/* Image Uploads */}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-semibold text-foreground">Product Photos (Max 3)</Label>
+              <div className="grid grid-cols-3 gap-3">
+                <ImageUpload
+                  value={formData.image}
+                  onChange={(url) => setFormData({ ...formData, image: url })}
+                  label="Photo 1 (Main)"
+                />
+                <ImageUpload
+                  value={formData.image2}
+                  onChange={(url) => setFormData({ ...formData, image2: url })}
+                  label="Photo 2"
+                />
+                <ImageUpload
+                  value={formData.image3}
+                  onChange={(url) => setFormData({ ...formData, image3: url })}
+                  label="Photo 3"
+                />
+              </div>
+              
+              {/* Requirements */}
+              <div className="rounded-lg bg-muted/60 px-3 py-2 space-y-0.5 mt-2">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">
+                  Photo Requirements
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-normal">
+                  JPG, PNG, or WEBP. Square (1:1) aspect ratio recommended. Max 5MB per file. Only uploaded photos will be displayed.
+                </p>
+              </div>
+            </div>
 
             <div className="space-y-2">
               <Label htmlFor="name">Product Name</Label>

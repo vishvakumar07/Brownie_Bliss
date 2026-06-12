@@ -288,7 +288,7 @@ export function ProductGrid() {
               category: p.category || "classic",
               badge: p.badge || null,
               inStock: p.stock > 0 && p.active,
-              image: p.image_url || "",
+              image: p.image_url ? p.image_url.split(',')[0].trim() : "",
             }
           }))
         } else { setDisplayProducts(FALLBACK_PRODUCTS) }

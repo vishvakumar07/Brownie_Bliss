@@ -150,7 +150,7 @@ export function OurProductsSection() {
                 rating: stats ? Number((stats.sum / stats.count).toFixed(1)) : 0,
                 badge: p.stock === 0 ? "Out of Stock" : p.badge,
                 inStock: p.stock > 0,
-                image: p.image_url || "",
+                image: p.image_url ? p.image_url.split(',')[0].trim() : "",
               }
             })
           )

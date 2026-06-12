@@ -205,14 +205,14 @@ export default function CheckoutPage() {
                   <span className="text-[#2D1B14] font-medium">
                     {ord.product_name} <span className="text-[#6D5D55] text-xs">x{ord.quantity}</span>
                   </span>
-                  <span className="font-bold text-[#4E342E]">Rs. {ord.total}</span>
+                  <span className="font-sans font-bold text-[#4E342E]">₹{ord.total}</span>
                 </div>
               ))}
             </div>
             <div className="h-px bg-[#E8DDD4] my-2" />
             <div className="flex justify-between items-center text-sm font-bold text-[#2D1B14]">
               <span>Grand Total ({formData.paymentMethod})</span>
-              <span className="text-base text-[#4E342E]">Rs. {finalTotal}</span>
+              <span className="font-sans text-base font-bold text-[#4E342E]">₹{finalTotal}</span>
             </div>
           </div>
 
@@ -479,7 +479,7 @@ export default function CheckoutPage() {
                     </>
                   ) : (
                     <>
-                      Place Order · Rs. {finalTotal}
+                      Place Order · ₹{finalTotal}
                     </>
                   )}
                 </Button>
@@ -518,9 +518,9 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm text-[#2D1B14] truncate">{item.product.name}</p>
-                        <p className="text-xs text-[#6D5D55]">Rs. {item.product.price} each</p>
+                        <p className="font-sans text-xs text-[#6D5D55]">₹{item.product.price} each</p>
                       </div>
-                      <p className="font-bold text-sm text-[#4E342E] shrink-0">Rs. {item.product.price * item.quantity}</p>
+                      <p className="font-sans font-bold text-sm text-[#4E342E] shrink-0">₹{item.product.price * item.quantity}</p>
                     </div>
                   ))}
                 </div>
@@ -531,21 +531,21 @@ export default function CheckoutPage() {
                 <div className="space-y-2 text-sm text-[#6D5D55]">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-medium text-[#2D1B14]">Rs. {cartTotal}</span>
+                    <span className="font-sans font-medium text-[#2D1B14]">₹{cartTotal}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Delivery Charge</span>
-                    <span className="font-medium text-[#2D1B14]">
+                    <span className="font-sans font-medium text-[#2D1B14]">
                       {shippingCharge === 0 ? (
-                        <span className="text-green-600 font-semibold">FREE</span>
+                        <span className="text-green-600 font-semibold font-sans">FREE</span>
                       ) : (
-                        `Rs. ${shippingCharge}`
+                        `₹${shippingCharge}`
                       )}
                     </span>
                   </div>
                   {shippingCharge > 0 && (
                     <p className="text-[11px] text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-100 mt-1">
-                      💡 Tip: Add items worth Rs. {500 - cartTotal} more for FREE delivery!
+                      💡 Tip: Add items worth ₹{500 - cartTotal} more for FREE delivery!
                     </p>
                   )}
                 </div>
@@ -555,7 +555,7 @@ export default function CheckoutPage() {
                 {/* Grand Total */}
                 <div className="flex justify-between items-baseline pt-2">
                   <span className="font-bold text-base text-[#2D1B14]">Total Amount</span>
-                  <span className="font-serif text-2xl font-bold text-[#4E342E]">Rs. {finalTotal}</span>
+                  <span className="font-sans text-2xl font-bold text-[#4E342E]">₹{finalTotal}</span>
                 </div>
 
                 {/* Submit Button for Desktop */}
@@ -572,7 +572,7 @@ export default function CheckoutPage() {
                       </>
                     ) : (
                       <>
-                        Place Order · Rs. {finalTotal}
+                        Place Order · ₹{finalTotal}
                       </>
                     )}
                   </Button>

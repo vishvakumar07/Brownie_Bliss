@@ -36,6 +36,7 @@ import { supabase } from "@/lib/supabase"
 const SEED_PRODUCTS = [
   {
     name: "Classic Brownie",
+    slug: "classic-brownie",
     description: "Our signature rich, fudgy chocolate brownie with a perfect crackly top. Made with premium cocoa and Belgian chocolate.",
     price: 149,
     stock: 50,
@@ -46,6 +47,7 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Nutella Brownie",
+    slug: "nutella-brownie",
     description: "Decadent brownie swirled with creamy Nutella hazelnut spread. A chocolate lover's dream come true.",
     price: 179,
     stock: 40,
@@ -56,6 +58,7 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Walnut Brownie",
+    slug: "walnut-brownie",
     description: "Chunky California walnuts in our signature chocolate base. Perfect balance of crunch and fudge.",
     price: 169,
     stock: 35,
@@ -66,6 +69,7 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Triple Chocolate Brownie",
+    slug: "triple-chocolate-brownie",
     description: "Three types of chocolate — dark, milk, and white — for the ultimate chocolate indulgence.",
     price: 199,
     stock: 30,
@@ -76,6 +80,7 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Salted Caramel Brownie",
+    slug: "salted-caramel-brownie",
     description: "Rich chocolate brownie drizzled with homemade salted caramel. Sweet meets salty perfection.",
     price: 189,
     stock: 25,
@@ -86,6 +91,7 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Peanut Butter Brownie",
+    slug: "peanut-butter-brownie",
     description: "Creamy peanut butter swirled into our classic brownie. A heavenly combination.",
     price: 179,
     stock: 30,
@@ -96,6 +102,7 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Cookie Dough Brownie",
+    slug: "cookie-dough-brownie",
     description: "Edible cookie dough chunks baked into a rich chocolate brownie. Two desserts in one!",
     price: 209,
     stock: 0,
@@ -106,6 +113,7 @@ const SEED_PRODUCTS = [
   },
   {
     name: "Red Velvet Brownie",
+    slug: "red-velvet-brownie",
     description: "A unique twist — red velvet brownie with cream cheese swirl. Elegant and delicious.",
     price: 189,
     stock: 20,
@@ -119,6 +127,7 @@ const SEED_PRODUCTS = [
 interface Product {
   id: string | number
   name: string
+  slug: string
   description: string
   price: number
   stock: number
@@ -289,6 +298,7 @@ export default function ProductsManagementPage() {
           data.map((p) => ({
             id: p.id,
             name: p.name,
+            slug: p.slug || p.name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
             description: p.description,
             price: Number(p.price),
             stock: Number(p.stock),
@@ -319,6 +329,7 @@ export default function ProductsManagementPage() {
         .upsert(
           SEED_PRODUCTS.map((p) => ({
             name: p.name,
+            slug: p.slug,
             description: p.description,
             price: p.price,
             stock: p.stock,
@@ -327,7 +338,7 @@ export default function ProductsManagementPage() {
             badge: p.badge,
             image_url: p.image_url,
           })),
-          { onConflict: "name" }
+          { onConflict: "slug" }
         )
 
       if (error) throw error
@@ -351,6 +362,7 @@ export default function ProductsManagementPage() {
       ? SEED_PRODUCTS.map((p, i) => ({
           id: `static-${i}`,
           name: p.name,
+          slug: p.slug,
           description: p.description,
           price: p.price,
           stock: p.stock,
@@ -424,6 +436,7 @@ export default function ProductsManagementPage() {
           .from("products")
           .update({
             name: formData.name,
+            slug: formData.name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
             description: formData.description,
             price: Number(formData.price),
             stock: Number(formData.stock),
@@ -440,6 +453,7 @@ export default function ProductsManagementPage() {
           .from("products")
           .insert({
             name: formData.name,
+            slug: formData.name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
             description: formData.description,
             price: Number(formData.price),
             stock: Number(formData.stock),

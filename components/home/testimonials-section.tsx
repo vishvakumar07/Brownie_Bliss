@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Star, Quote } from "lucide-react"
+import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 
 const testimonials = [
   { id: 1, review: "Ordered the Classic Brownie for a small get-together and everyone kept asking where I got them. Dense, fudgy, and perfectly sweet — nothing like the store-bought ones.", name: "Priya Sharma", location: "Mumbai", rating: 5 },
@@ -39,7 +39,7 @@ export function TestimonialsSection({ hideHeader = false }: { hideHeader?: boole
   const t = testimonials[current]
 
   return (
-    <section id="reviews" className="py-8 md:py-12 bg-[#FAF6F1] overflow-hidden">
+    <section id="reviews" className="py-6 md:py-12 bg-[#FAF6F1] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
@@ -48,19 +48,20 @@ export function TestimonialsSection({ hideHeader = false }: { hideHeader?: boole
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-6"
+            className="text-center mb-4 md:mb-6"
           >
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#D4A373] mb-1">
               Customer Reviews
             </p>
-            <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-[#2D1B14]">
+            <h2 className="font-serif text-xl md:text-3xl lg:text-4xl font-bold text-[#2D1B14]">
               What Our Customers Say
             </h2>
           </motion.div>
         )}
 
-        {/* Mobile: single-card swipe carousel */}
+        {/* ── MOBILE: compact swipe carousel ── */}
         <div className="block md:hidden">
+          {/* Card swipe area — 90% width centred */}
           <div
             className="relative overflow-hidden"
             onTouchStart={handleTouchStart}
@@ -70,67 +71,62 @@ export function TestimonialsSection({ hideHeader = false }: { hideHeader?: boole
               <motion.div
                 key={current}
                 custom={direction}
-                initial={{ opacity: 0, x: direction * 60 }}
+                initial={{ opacity: 0, x: direction * 50 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: direction * -60 }}
-                transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full rounded-2xl border border-[#E2D4C9] bg-white p-5 shadow-[0_4px_20px_rgba(78,52,46,0.08)]"
+                exit={{ opacity: 0, x: direction * -50 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                className="w-[90%] mx-auto rounded-xl border border-[#E2D4C9] bg-white
+                           shadow-[0_2px_12px_rgba(78,52,46,0.08)]"
+                style={{ padding: "14px" }}
               >
-                {/* Quote icon */}
-                <div className="w-8 h-8 rounded-full flex items-center justify-center mb-3"
-                  style={{ background: "rgba(198,134,66,0.12)" }}>
-                  <Quote className="w-4 h-4 text-[#C68642]" />
-                </div>
-
-                {/* Stars */}
-                <div className="flex items-center gap-0.5 mb-3">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-
-                {/* Review */}
-                <p className="text-[#5C4E46] text-sm leading-relaxed italic mb-4">
-                  &ldquo;{t.review}&rdquo;
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-3">
+                {/* Top row: avatar + name + stars */}
+                <div className="flex items-center gap-2.5 mb-2.5">
+                  {/* Avatar */}
                   <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                    className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0"
                     style={{ background: "linear-gradient(135deg,#4E342E,#C68642)", color: "#FFF8F0" }}
                   >
                     {t.name.charAt(0)}
                   </div>
-                  <div>
-                    <p className="font-semibold text-[#2D1B14] text-sm">{t.name}</p>
-                    <p className="text-xs text-[#8B7E74]">{t.location}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-[#2D1B14] text-xs leading-tight">{t.name}</p>
+                    <p className="text-[10px] text-[#8B7E74]">{t.location}</p>
+                  </div>
+                  {/* Stars right-aligned */}
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                    {Array.from({ length: t.rating }).map((_, i) => (
+                      <Star key={i} className="w-3 h-3 fill-amber-400 text-amber-400" />
+                    ))}
                   </div>
                 </div>
+
+                {/* Review — 3-line clamp to reduce card height */}
+                <p className="text-[#5C4E46] text-xs leading-relaxed italic line-clamp-3">
+                  &ldquo;{t.review}&rdquo;
+                </p>
               </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center justify-between mt-4 px-1">
+          {/* Controls row: prev · dots · next */}
+          <div className="flex items-center justify-center gap-4 mt-3">
             <button
               onClick={prev}
-              className="w-9 h-9 rounded-full border border-[#E8DDD4] flex items-center justify-center transition-all active:scale-90"
+              className="w-7 h-7 rounded-full border border-[#E8DDD4] flex items-center justify-center active:scale-90 transition-all"
               style={{ background: "#fff" }}
             >
-              <ChevronLeft className="w-4 h-4 text-[#4E342E]" />
+              <ChevronLeft className="w-3.5 h-3.5 text-[#4E342E]" />
             </button>
 
-            {/* Dots */}
             <div className="flex items-center gap-1.5">
               {testimonials.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => goTo(i)}
-                  className="transition-all duration-300 rounded-full"
+                  className="rounded-full transition-all duration-300"
                   style={{
-                    width: i === current ? 20 : 6,
-                    height: 6,
+                    width: i === current ? 18 : 5,
+                    height: 5,
                     background: i === current ? "#4E342E" : "#E8DDD4",
                   }}
                 />
@@ -139,17 +135,12 @@ export function TestimonialsSection({ hideHeader = false }: { hideHeader?: boole
 
             <button
               onClick={next}
-              className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90"
+              className="w-7 h-7 rounded-full flex items-center justify-center active:scale-90 transition-all"
               style={{ background: "#4E342E" }}
             >
-              <ChevronRight className="w-4 h-4 text-white" />
+              <ChevronRight className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-
-          {/* Counter */}
-          <p className="text-center text-[11px] text-[#8B7E74] mt-2">
-            {current + 1} / {total}
-          </p>
         </div>
 
         {/* Desktop: 3-column grid with arrows */}

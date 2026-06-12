@@ -18,14 +18,14 @@ import { supabase } from "@/lib/supabase"
 
 // ─── Fallback products ────────────────────────────────────────────
 const FALLBACK_PRODUCTS = [
-  { id: "fallback-1", name: "Classic Brownie", description: "Our signature rich, fudgy chocolate brownie with a perfect crackly top.", price: 149, rating: 4.9, reviews: 127, category: "classic", badge: "Best Seller", inStock: true, image: "/Classic-Brownie.webp" },
-  { id: "fallback-2", name: "Nutella Brownie", description: "Decadent brownie swirled with creamy Nutella hazelnut spread.", price: 179, rating: 4.8, reviews: 89, category: "premium", badge: "Popular", inStock: true, image: "/Nutela-Brownie.webp" },
-  { id: "fallback-3", name: "Walnut Brownie", description: "Chunky California walnuts in our signature chocolate base.", price: 169, rating: 4.9, reviews: 103, category: "classic", badge: "Premium", inStock: true, image: "/Wallnut-Brownie.jpg" },
-  { id: "fallback-4", name: "Triple Chocolate Brownie", description: "Three types of chocolate — dark, milk, and white — for ultimate indulgence.", price: 199, rating: 5.0, reviews: 156, category: "premium", badge: "Chef Special", inStock: true, image: "/Triple-Chocolate.jpg" },
-  { id: "fallback-5", name: "Salted Caramel Brownie", description: "Rich chocolate brownie drizzled with homemade salted caramel. Sweet meets salty perfection.", price: 189, rating: 4.7, reviews: 76, category: "special", badge: "New", inStock: true, image: "/salted-caramel-brownie.jpg" },
-  { id: "fallback-6", name: "Peanut Butter Brownie", description: "Creamy peanut butter swirled into our classic brownie. A heavenly combination.", price: 179, rating: 4.8, reviews: 92, category: "classic", badge: null, inStock: true, image: "/Peanut-Butter-Brownie.jpg" },
-  { id: "fallback-7", name: "Cookie Dough Brownie", description: "Edible cookie dough chunks baked into a rich chocolate brownie. Two desserts in one!", price: 209, rating: 4.9, reviews: 64, category: "special", badge: "Limited", inStock: false, image: "/Cookie-Dough-Brownie.jpg" },
-  { id: "fallback-8", name: "Red Velvet Brownie", description: "A unique twist — red velvet brownie with cream cheese swirl. Elegant and delicious.", price: 189, rating: 4.6, reviews: 58, category: "premium", badge: "Seasonal", inStock: true, image: "/Red-Velvet-Brownie.jpg" },
+  { id: "fallback-1", name: "Classic Brownie", slug: "classic-brownie", description: "Our signature rich, fudgy chocolate brownie with a perfect crackly top.", price: 149, rating: 0, reviews: 0, category: "classic", badge: "Best Seller", inStock: true, image: "/Classic-Brownie.webp" },
+  { id: "fallback-2", name: "Nutella Brownie", slug: "nutella-brownie", description: "Decadent brownie swirled with creamy Nutella hazelnut spread.", price: 179, rating: 0, reviews: 0, category: "premium", badge: "Popular", inStock: true, image: "/Nutela-Brownie.webp" },
+  { id: "fallback-3", name: "Walnut Brownie", slug: "walnut-brownie", description: "Chunky California walnuts in our signature chocolate base.", price: 169, rating: 0, reviews: 0, category: "classic", badge: "Premium", inStock: true, image: "/Wallnut-Brownie.jpg" },
+  { id: "fallback-4", name: "Triple Chocolate Brownie", slug: "triple-chocolate-brownie", description: "Three types of chocolate — dark, milk, and white — for ultimate indulgence.", price: 199, rating: 0, reviews: 0, category: "premium", badge: "Chef Special", inStock: true, image: "/Triple-Chocolate.jpg" },
+  { id: "fallback-5", name: "Salted Caramel Brownie", slug: "salted-caramel-brownie", description: "Rich chocolate brownie drizzled with homemade salted caramel. Sweet meets salty perfection.", price: 189, rating: 0, reviews: 0, category: "special", badge: "New", inStock: true, image: "/salted-caramel-brownie.jpg" },
+  { id: "fallback-6", name: "Peanut Butter Brownie", slug: "peanut-butter-brownie", description: "Creamy peanut butter swirled into our classic brownie. A heavenly combination.", price: 179, rating: 0, reviews: 0, category: "classic", badge: null, inStock: true, image: "/Peanut-Butter-Brownie.jpg" },
+  { id: "fallback-7", name: "Cookie Dough Brownie", slug: "cookie-dough-brownie", description: "Edible cookie dough chunks baked into a rich chocolate brownie. Two desserts in one!", price: 209, rating: 0, reviews: 0, category: "special", badge: "Limited", inStock: false, image: "/Cookie-Dough-Brownie.jpg" },
+  { id: "fallback-8", name: "Red Velvet Brownie", slug: "red-velvet-brownie", description: "A unique twist — red velvet brownie with cream cheese swirl. Elegant and delicious.", price: 189, rating: 0, reviews: 0, category: "premium", badge: "Seasonal", inStock: true, image: "/Red-Velvet-Brownie.jpg" },
 ]
 
 const CATEGORIES = [
@@ -45,6 +45,7 @@ const SORT_OPTIONS = [
 interface Product {
   id: string | number
   name: string
+  slug: string
   description: string
   price: number
   rating: number
@@ -80,7 +81,7 @@ function ProductCard({
   onUpdate,
   onWishlist,
   wishlisted,
-  onQuickView,
+  onCardClick,
 }: {
   product: Product
   cartQty: number
@@ -88,7 +89,7 @@ function ProductCard({
   onUpdate: (delta: number) => void
   onWishlist: () => void
   wishlisted: boolean
-  onQuickView: () => void
+  onCardClick: () => void
 }) {
   const bs = product.badge ? badgeStyle(product.badge) : null
 
@@ -105,7 +106,7 @@ function ProductCard({
       <div
         className="relative w-full overflow-hidden bg-[#FAF6F1] cursor-pointer"
         style={{ aspectRatio: "1 / 1" }}
-        onClick={() => product.inStock && onQuickView()}
+        onClick={onCardClick}
       >
         {product.image ? (
           <Image
@@ -163,23 +164,20 @@ function ProductCard({
       <div className="flex flex-col flex-1 px-2.5 pt-2 pb-2.5">
         {/* Name */}
         <h3
-          className="font-semibold text-[#2D1B14] leading-snug line-clamp-2 mb-1"
+          className="font-semibold text-[#2D1B14] leading-snug line-clamp-2 mb-1.5 cursor-pointer hover:underline"
           style={{ fontSize: "clamp(11px, 3vw, 13px)" }}
+          onClick={onCardClick}
         >
           {product.name}
         </h3>
 
-        {/* Rating row */}
-        <div className="flex items-center gap-1 mb-1.5">
-          <Star className="w-3 h-3 fill-[#D4A373] text-[#D4A373]" />
-          <span className="text-[11px] font-semibold text-[#2D1B14]">{product.rating.toFixed(1)}</span>
-          <span className="text-[10px] text-[#8B7E74]">({product.reviews})</span>
-        </div>
-
-        {/* Price + Add */}
-        <div className="flex items-center justify-between gap-1 mt-auto">
-          <span className="font-serif font-bold text-[#4E342E]" style={{ fontSize: "clamp(13px, 3.5vw, 15px)" }}>
-            ₹ {product.price}
+        {/* Price + Add — most prominent row */}
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <span
+            className="font-sans font-bold text-[#2D1B14]"
+            style={{ fontSize: "clamp(13px, 3.5vw, 15px)", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}
+          >
+            ₹{product.price}
           </span>
 
           {cartQty > 0 ? (
@@ -211,6 +209,19 @@ function ProductCard({
               <Plus className="w-3 h-3" />
               Add
             </button>
+          )}
+        </div>
+
+        {/* Rating row — below price */}
+        <div className="flex items-center gap-1 font-sans">
+          <Star className="w-3 h-3 fill-[#D4A373] text-[#D4A373]" />
+          {product.reviews > 0 ? (
+            <>
+              <span className="text-[11px] font-semibold text-[#2D1B14]">{product.rating.toFixed(1)}</span>
+              <span className="text-[10px] text-[#8B7E74]">({product.reviews})</span>
+            </>
+          ) : (
+            <span className="text-[10px] text-[#8B7E74]">No reviews yet</span>
           )}
         </div>
       </div>
@@ -249,16 +260,37 @@ export function ProductGrid() {
     async function load() {
       setLoading(true)
       try {
-        const { data, error } = await supabase
+        const { data: productsData, error: prodError } = await supabase
           .from("products").select("*").eq("active", true).gt("stock", 0).order("created_at", { ascending: false })
-        if (error) throw error
-        if (data && data.length > 0) {
-          setDisplayProducts(data.map((p) => ({
-            id: p.id, name: p.name, description: p.description, price: Number(p.price),
-            rating: 4.8, reviews: Math.floor(20 + Math.random() * 80),
-            category: p.category || "classic", badge: p.badge || null,
-            inStock: p.stock > 0 && p.active, image: p.image_url || "",
-          })))
+        if (prodError) throw prodError
+
+        const { data: reviewsData } = await supabase
+          .from("reviews").select("product_id, rating")
+
+        const statsMap = (reviewsData || []).reduce((acc, r) => {
+          if (!acc[r.product_id]) acc[r.product_id] = { sum: 0, count: 0 }
+          acc[r.product_id].sum += r.rating
+          acc[r.product_id].count += 1
+          return acc
+        }, {} as Record<string, { sum: number; count: number }>)
+
+        if (productsData && productsData.length > 0) {
+          setDisplayProducts(productsData.map((p) => {
+            const stats = statsMap[p.id]
+            return {
+              id: p.id,
+              name: p.name,
+              slug: p.slug || p.name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
+              description: p.description,
+              price: Number(p.price),
+              rating: stats ? stats.sum / stats.count : 0,
+              reviews: stats ? stats.count : 0,
+              category: p.category || "classic",
+              badge: p.badge || null,
+              inStock: p.stock > 0 && p.active,
+              image: p.image_url || "",
+            }
+          }))
         } else { setDisplayProducts(FALLBACK_PRODUCTS) }
       } catch { setDisplayProducts(FALLBACK_PRODUCTS) }
       finally { setLoading(false) }
@@ -509,7 +541,7 @@ export function ProductGrid() {
                     onUpdate={(delta) => updateCartQty(product.id, delta)}
                     onWishlist={() => toggleWishlist(product.id)}
                     wishlisted={wishlist.has(product.id)}
-                    onQuickView={() => setSelectedProduct(product)}
+                    onCardClick={() => router.push(`/products/${product.slug}`)}
                   />
                 </motion.div>
               ))}
@@ -559,72 +591,7 @@ export function ProductGrid() {
         )}
       </AnimatePresence>
 
-      {/* ── Quick View Dialog ─────────────────────────────────────────── */}
-      <Dialog open={!!selectedProduct} onOpenChange={() => { setSelectedProduct(null); setQuantity(1) }}>
-        <DialogContent className="max-w-sm rounded-2xl overflow-hidden p-0 gap-0 mx-4">
-          {selectedProduct && (
-            <>
-              <div className="relative w-full aspect-square bg-[#FAF6F1]">
-                {selectedProduct.image ? (
-                  <Image src={selectedProduct.image} alt={selectedProduct.name} fill className="object-contain" />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#F5EDE6] to-[#EFE4CC]">
-                    <span className="font-serif text-[#4E342E]/60 text-xl font-bold text-center px-6">
-                      {selectedProduct.name}
-                    </span>
-                  </div>
-                )}
-                {selectedProduct.badge && (
-                  <span
-                    className="absolute top-3 left-3 text-xs font-bold px-3 py-1 rounded-full"
-                    style={{ ...badgeStyle(selectedProduct.badge), background: badgeStyle(selectedProduct.badge).bg, color: badgeStyle(selectedProduct.badge).text }}
-                  >
-                    {selectedProduct.badge}
-                  </span>
-                )}
-              </div>
-              <div className="p-5 bg-white">
-                <DialogTitle className="font-serif text-xl text-[#2D1B14] mb-0.5">
-                  {selectedProduct.name}
-                </DialogTitle>
-                <div className="flex items-center gap-1.5 mb-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className={`w-3.5 h-3.5 ${i < Math.floor(selectedProduct.rating) ? "fill-[#D4A373] text-[#D4A373]" : "fill-[#E8DDD4] text-[#E8DDD4]"}`} />
-                  ))}
-                  <span className="text-xs text-[#6D5D55]">({selectedProduct.reviews} reviews)</span>
-                </div>
-                <DialogDescription className="text-[#6D5D55] text-sm leading-relaxed mb-4">
-                  {selectedProduct.description}
-                </DialogDescription>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-serif text-2xl font-bold text-[#4E342E]">
-                    ₹ {selectedProduct.price * quantity}
-                  </span>
-                  <div className="flex items-center border border-[#E8DDD4] rounded-full overflow-hidden">
-                    <button className="w-9 h-9 flex items-center justify-center hover:bg-[#F5EDE6] text-[#4E342E] transition-colors"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                      <Minus className="w-3.5 h-3.5" />
-                    </button>
-                    <span className="w-8 text-center text-sm font-bold text-[#2D1B14]">{quantity}</span>
-                    <button className="w-9 h-9 flex items-center justify-center hover:bg-[#F5EDE6] text-[#4E342E] transition-colors"
-                      onClick={() => setQuantity(quantity + 1)}>
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-                <button
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-colors active:scale-[0.98]"
-                  style={{ background: "linear-gradient(135deg,#4E342E,#2D1B14)", color: "#FFF8F0", boxShadow: "0 4px 14px rgba(78,52,46,0.28)" }}
-                  onClick={() => addToCart(selectedProduct, quantity)}
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  Add to Cart · ₹ {selectedProduct.price * quantity}
-                </button>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Quick View Dialog Removed */}
 
       {/* ── Cart Dialog ───────────────────────────────────────────────── */}
       <Dialog open={isCartOpen} onOpenChange={setIsCartOpen}>
@@ -667,7 +634,12 @@ export function ProductGrid() {
               </div>
               <div className="flex justify-between items-center pt-1 border-t border-[#E8DDD4]">
                 <p className="font-semibold text-[#2D1B14]">Subtotal</p>
-                <p className="font-serif text-xl font-bold text-[#4E342E]">₹ {cartTotal}</p>
+                <span
+                  className="font-sans font-bold text-[#2D1B14]"
+                  style={{ fontSize: "1.125rem", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}
+                >
+                  ₹{cartTotal}
+                </span>
               </div>
               <Button
                 className="w-full py-3 rounded-xl transition-all active:scale-[0.98]"

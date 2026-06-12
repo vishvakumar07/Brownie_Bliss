@@ -74,6 +74,66 @@ create table if not exists public.orders (
   updated_at          timestamptz not null default now()
 );
 
+-- Alter existing products table to ensure slug column exists and is unique
+alter table public.products add column if not exists slug text;
+alter table public.products drop constraint if exists products_slug_key;
+alter table public.products add constraint products_slug_key unique (slug);
+
+-- ──────────────────────────────────────────────────────────
+-- 1B. REVIEWS TABLE
+-- ──────────────────────────────────────────────────────────
+create table if not exists public.reviews (
+  id             uuid primary key default gen_random_uuid(),
+  product_id     uuid references public.products(id) on delete cascade,
+  customer_name  text not null,
+  customer_email text not null,
+  rating         integer not null check (rating >= 1 and rating <= 5),
+  review_title   text,
+  review_content text not null,
+  created_at     timestamptz not null default now()
+);
+
+-- Ensure RLS on reviews table
+alter table public.reviews enable row level security;
+
+drop policy if exists "Public can read reviews" on public.reviews;
+create policy "Public can read reviews"
+  on public.reviews for select
+  using (true);
+
+drop policy if exists "Anyone can insert reviews" on public.reviews;
+create policy "Anyone can insert reviews"
+  on public.reviews for insert
+  with check (true);
+
+-- ──────────────────────────────────────────────────────────
+-- 2. ORDERS TABLE
+-- ──────────────────────────────────────────────────────────
+create table if not exists public.orders (
+  id                  uuid primary key default gen_random_uuid(),
+  customer_name       text not null,
+  phone               text,
+  email               text,
+  address             text,
+  house_number        text,
+  street_address      text,
+  area                text,
+  city                text,
+  state               text,
+  pincode             text,
+  landmark            text,
+  product_name        text not null,
+  product_id          uuid references public.products(id) on delete set null,
+  quantity            integer not null default 1,
+  total               numeric(10, 2) not null default 0,
+  payment_method      text not null default 'COD',
+  special_instructions text,
+  status              text not null default 'Pending'
+                      check (status in ('Pending','Processing','Delivered','Cancelled')),
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+
 -- Alter existing orders table to ensure all columns exist
 alter table public.orders add column if not exists phone text;
 alter table public.orders add column if not exists email text;
@@ -192,24 +252,35 @@ create publication supabase_realtime;
 alter publication supabase_realtime add table public.products;
 alter publication supabase_realtime add table public.orders;
 alter publication supabase_realtime add table public.contact_messages;
+alter publication supabase_realtime add table public.reviews;
 
 
 -- ──────────────────────────────────────────────────────────
 -- 6. SAMPLE PRODUCTS (2 demo records for analytics)
 -- ──────────────────────────────────────────────────────────
-insert into public.products (name, description, price, stock, active, category, badge)
+-- Note: inserting with unique slug values
+insert into public.products (name, slug, description, price, stock, active, category, badge)
 values
   (
     'Classic Brownie',
+    'classic-brownie',
     'Our signature rich, fudgy chocolate brownie with a perfect crackly top. Made with premium cocoa and Belgian chocolate.',
     149.00, 50, true, 'classic', 'Best Seller'
   ),
   (
     'Nutella Brownie',
+    'nutella-brownie',
     'Decadent brownie swirled with creamy Nutella hazelnut spread. A chocolate lover''s dream come true.',
     179.00, 30, true, 'premium', 'Popular'
   )
-on conflict do nothing;
+on conflict (slug) do update
+set name = excluded.name,
+    description = excluded.description,
+    price = excluded.price,
+    stock = excluded.stock,
+    active = excluded.active,
+    category = excluded.category,
+    badge = excluded.badge;
 
 
 -- ──────────────────────────────────────────────────────────
@@ -241,6 +312,7 @@ drop policy if exists "Allow Public Delete" on storage.objects;
 create policy "Allow Public Delete"
   on storage.objects for delete
   using (bucket_id = 'product-photos');
+
 
 -- ──────────────────────────────────────────────────────────
 -- DONE ✓ All tables, storage buckets, RLS policies, and realtime are set up.

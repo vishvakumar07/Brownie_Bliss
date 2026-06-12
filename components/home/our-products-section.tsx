@@ -12,9 +12,10 @@ const allProducts = [
   {
     id: 1,
     name: "Classic Brownie",
+    slug: "classic-brownie",
     description: "Our signature rich, fudgy chocolate brownie with a perfect crackly top. Made with premium cocoa and Belgian chocolate.",
     price: 149,
-    rating: 4.9,
+    rating: 0,
     badge: "Best Seller",
     inStock: true,
     image: "/Classic-Brownie.webp",
@@ -22,9 +23,10 @@ const allProducts = [
   {
     id: 2,
     name: "Nutella Brownie",
+    slug: "nutella-brownie",
     description: "Decadent brownie swirled with creamy Nutella hazelnut spread. A chocolate lover's dream come true.",
     price: 179,
-    rating: 4.8,
+    rating: 0,
     badge: "Popular",
     inStock: true,
     image: "/Nutela-Brownie.webp",
@@ -32,9 +34,10 @@ const allProducts = [
   {
     id: 3,
     name: "Walnut Brownie",
+    slug: "walnut-brownie",
     description: "Chunky California walnuts in our signature chocolate base. Perfect balance of crunch and fudge.",
     price: 169,
-    rating: 4.9,
+    rating: 0,
     badge: "Premium",
     inStock: true,
     image: "/Wallnut-Brownie.jpg",
@@ -42,9 +45,10 @@ const allProducts = [
   {
     id: 4,
     name: "Triple Chocolate Brownie",
+    slug: "triple-chocolate-brownie",
     description: "Three types of chocolate — dark, milk, and white — for the ultimate chocolate indulgence.",
     price: 199,
-    rating: 5.0,
+    rating: 0,
     badge: "Chef Special",
     inStock: true,
     image: "/Triple-Chocolate.jpg",
@@ -52,9 +56,10 @@ const allProducts = [
   {
     id: 5,
     name: "Salted Caramel Brownie",
+    slug: "salted-caramel-brownie",
     description: "Rich chocolate brownie drizzled with homemade salted caramel. Sweet meets salty perfection.",
     price: 189,
-    rating: 4.7,
+    rating: 0,
     badge: "New",
     inStock: true,
     image: "/salted-caramel-brownie.jpg",
@@ -62,9 +67,10 @@ const allProducts = [
   {
     id: 6,
     name: "Peanut Butter Brownie",
+    slug: "peanut-butter-brownie",
     description: "Creamy peanut butter swirled into our classic brownie. A heavenly combination.",
     price: 179,
-    rating: 4.8,
+    rating: 0,
     badge: null,
     inStock: true,
     image: "/Peanut-Butter-Brownie.jpg",
@@ -72,9 +78,10 @@ const allProducts = [
   {
     id: 7,
     name: "Cookie Dough Brownie",
+    slug: "cookie-dough-brownie",
     description: "Edible cookie dough chunks baked into a rich chocolate brownie. Two desserts in one!",
     price: 209,
-    rating: 4.9,
+    rating: 0,
     badge: "Limited",
     inStock: true,
     image: "/Cookie-Dough-Brownie.jpg",
@@ -82,9 +89,10 @@ const allProducts = [
   {
     id: 8,
     name: "Red Velvet Brownie",
+    slug: "red-velvet-brownie",
     description: "A unique twist — red velvet brownie with cream cheese swirl. Elegant and delicious.",
     price: 189,
-    rating: 4.6,
+    rating: 0,
     badge: "Seasonal",
     inStock: true,
     image: "/Red-Velvet-Brownie.jpg",
@@ -110,26 +118,41 @@ export function OurProductsSection() {
   useEffect(() => {
     async function loadProducts() {
       try {
-        const { data, error } = await supabase
+        const { data: prodData, error: prodErr } = await supabase
           .from("products")
           .select("*")
           .eq("active", true)
-          .limit(8) // show 8 products on the home page
+          .limit(8)
 
-        if (error) throw error
+        if (prodErr) throw prodErr
 
-        if (data && data.length > 0) {
+        const { data: reviewsData } = await supabase
+          .from("reviews")
+          .select("product_id, rating")
+
+        const statsMap = (reviewsData || []).reduce((acc, r) => {
+          if (!acc[r.product_id]) acc[r.product_id] = { sum: 0, count: 0 }
+          acc[r.product_id].sum += r.rating
+          acc[r.product_id].count += 1
+          return acc
+        }, {} as Record<string, { sum: number; count: number }>)
+
+        if (prodData && prodData.length > 0) {
           setProducts(
-            data.map((p) => ({
-              id: p.id,
-              name: p.name,
-              description: p.description,
-              price: Number(p.price),
-              rating: 4.8 + (Math.random() * 0.2), // organic placeholder rating
-              badge: p.stock === 0 ? "Out of Stock" : null,
-              inStock: p.stock > 0,
-              image: p.image_url || "",
-            }))
+            prodData.map((p) => {
+              const stats = statsMap[p.id]
+              return {
+                id: p.id,
+                name: p.name,
+                slug: p.slug || p.name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
+                description: p.description,
+                price: Number(p.price),
+                rating: stats ? Number((stats.sum / stats.count).toFixed(1)) : 0,
+                badge: p.stock === 0 ? "Out of Stock" : p.badge,
+                inStock: p.stock > 0,
+                image: p.image_url || "",
+              }
+            })
           )
         }
       } catch (err) {
@@ -150,7 +173,7 @@ export function OurProductsSection() {
   }
 
   return (
-    <section className="py-10 md:py-14 bg-background">
+    <section className="py-6 md:py-14 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Section Header ── */}
@@ -158,7 +181,7 @@ export function OurProductsSection() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-8 md:mb-10"
+          className="text-center mb-4 md:mb-10"
         >
           <p className="text-caramel font-medium mb-2 uppercase tracking-wide text-xs">
             Fresh &amp; Handcrafted
@@ -177,7 +200,7 @@ export function OurProductsSection() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5"
         >
           {displayProducts.map((product) => (
             <motion.div
@@ -191,7 +214,7 @@ export function OurProductsSection() {
 
                 {/* IMAGE AREA — 1:1 square, neutral bg, no dark overlay */}
                 <Link
-                  href="/products"
+                  href={`/products/${product.slug}`}
                   className="relative w-full flex-shrink-0 overflow-hidden block bg-[#FAF6F1] aspect-square"
                 >
                   {product.image ? (
@@ -237,13 +260,15 @@ export function OurProductsSection() {
                 {/* CONTENT AREA */}
                 <div className="flex flex-col flex-1 px-4 pt-3 pb-4 bg-white">
                   {/* name + rating */}
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <h3 className="font-semibold text-[#2D1B14] text-sm leading-snug line-clamp-1 flex-1">
-                      {product.name}
+                  <div className="flex items-start justify-between gap-2 mb-1.5 font-sans">
+                    <h3 className="font-semibold text-[#2D1B14] text-sm leading-snug line-clamp-1 flex-1 hover:underline">
+                      <Link href={`/products/${product.slug}`}>{product.name}</Link>
                     </h3>
                     <div className="flex items-center gap-1 shrink-0 mt-0.5">
                       <Star className="w-3.5 h-3.5 fill-[#D4A373] text-[#D4A373]" />
-                      <span className="text-xs font-semibold text-[#2D1B14]">{product.rating}</span>
+                      <span className="text-xs font-semibold text-[#2D1B14]">
+                        {product.rating > 0 ? product.rating : "—"}
+                      </span>
                     </div>
                   </div>
                   {/* description */}
@@ -254,8 +279,11 @@ export function OurProductsSection() {
                   <div className="h-px bg-[#E8DDD4] mb-3" />
                   {/* price + add */}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-serif text-base font-bold text-[#4E342E]">
-                      Rs. {product.price}
+                    <span
+                      className="font-sans font-bold text-[#2D1B14]"
+                      style={{ fontSize: "0.95rem", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}
+                    >
+                      ₹{product.price}
                     </span>
                     <button
                       onClick={() => handleAdd(product.name)}

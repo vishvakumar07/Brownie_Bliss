@@ -19,13 +19,13 @@ const footerLinks = {
 export function Footer() {
   return (
     <footer style={{ background: "#2D1B14", color: "#FFF8F0" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-10">
 
         {/* Mobile: Brand + social row */}
-        <div className="flex items-start justify-between mb-5 md:hidden">
+        <div className="flex items-start justify-between mb-3 md:hidden">
           <div>
-            <h3 className="font-serif text-xl font-bold mb-1">Brownie Bliss</h3>
-            <p className="text-cream/60 text-xs leading-relaxed max-w-[200px]">
+            <h3 className="font-serif text-lg font-bold mb-0.5">Brownie Bliss</h3>
+            <p className="text-cream/60 text-[11px] leading-relaxed max-w-[200px]">
               Handcrafted with love. Premium ingredients, homemade perfection.
             </p>
           </div>
@@ -54,7 +54,7 @@ export function Footer() {
         </div>
 
         {/* Mobile: 2-column quick links grid */}
-        <div className="md:hidden mb-5">
+        <div className="md:hidden mb-3">
           <div className="grid grid-cols-2 gap-x-4 gap-y-0">
             {/* Quick Links */}
             <div>
@@ -90,9 +90,9 @@ export function Footer() {
         </div>
 
         {/* Mobile: Contact info compact */}
-        <div className="md:hidden mb-5 pt-4" style={{ borderTop: "1px solid rgba(255,248,240,0.08)" }}>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#D4A373] mb-2">Contact</p>
-          <div className="flex flex-col gap-1.5">
+        <div className="md:hidden mb-3 pt-3" style={{ borderTop: "1px solid rgba(255,248,240,0.08)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#D4A373] mb-1.5">Contact</p>
+          <div className="flex flex-col gap-1">
             <a href="tel:+919876543210" className="flex items-center gap-2 text-cream/65 text-xs hover:text-[#D4A373] transition-colors">
               <Phone className="w-3.5 h-3.5 flex-shrink-0" />
               +91 98765 43210

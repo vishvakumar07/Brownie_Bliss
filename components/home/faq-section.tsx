@@ -74,14 +74,14 @@ export function FaqSection() {
   }
 
   return (
-    <section className="py-10 md:py-14 bg-muted/30">
+    <section className="py-6 md:py-14 bg-muted/30">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-8 md:mb-10"
+          className="text-center mb-4 md:mb-10"
         >
           <p className="text-caramel font-medium mb-2 tracking-wide uppercase text-xs">
             Got Questions?
@@ -100,7 +100,7 @@ export function FaqSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="space-y-3"
+          className="space-y-2 md:space-y-3"
         >
           {faqs.map((faq) => {
             const isOpen = openId === faq.id

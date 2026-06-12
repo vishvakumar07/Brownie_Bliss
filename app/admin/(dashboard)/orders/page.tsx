@@ -46,10 +46,12 @@ import * as XLSX from "xlsx"
 
 interface Order {
   id: string
+  ids: string[]
   customer_name: string
   phone: string
+  email: string
   address: string
-  product_name: string
+  products: { name: string; quantity: number; total: number }[]
   quantity: number
   total: number
   payment_method: string
@@ -58,17 +60,20 @@ interface Order {
   special_instructions?: string
 }
 
-// ── 10 realistic demo orders ──────────────────────────────────────────────────
-function daysAgo(n: number) {
+// Helper to calculate relative times for realistic demo data
+function daysAgo(n: number, hourOffset = 0) {
   const d = new Date()
   d.setDate(d.getDate() - n)
-  d.setHours(Math.floor(8 + Math.random() * 12), Math.floor(Math.random() * 60))
+  // Ensure same transactions share identical timestamps down to the minute
+  d.setHours(8 + hourOffset, 30, 0, 0)
   return d.toISOString()
 }
 
-const DEMO_ORDERS: Order[] = [
+// 10 realistic demo order rows (containing multiple items for same transaction)
+const DEMO_ORDERS_RAW = [
+  // Transaction 1: Priya Sharma (2 products)
   {
-    id: "demo-001-aabb",
+    id: "demo-001-aa",
     customer_name: "Priya Sharma",
     phone: "9876543210",
     address: "12, Rose Garden, Koramangala, Bengaluru, Karnataka – 560034",
@@ -77,11 +82,25 @@ const DEMO_ORDERS: Order[] = [
     total: 447,
     payment_method: "UPI",
     status: "Delivered",
-    created_at: daysAgo(0),
+    created_at: daysAgo(0, 1),
     special_instructions: "Please pack it nicely — it's a birthday gift! 🎂",
   },
   {
-    id: "demo-002-ccdd",
+    id: "demo-001-ab",
+    customer_name: "Priya Sharma",
+    phone: "9876543210",
+    address: "12, Rose Garden, Koramangala, Bengaluru, Karnataka – 560034",
+    product_name: "Walnut Brownie",
+    quantity: 1,
+    total: 169,
+    payment_method: "UPI",
+    status: "Delivered",
+    created_at: daysAgo(0, 1),
+    special_instructions: "Please pack it nicely — it's a birthday gift! 🎂",
+  },
+  // Transaction 2: Rahul Verma (1 product)
+  {
+    id: "demo-002-cc",
     customer_name: "Rahul Verma",
     phone: "9123456780",
     address: "45, MG Road, Pune, Maharashtra – 411001",
@@ -90,24 +109,39 @@ const DEMO_ORDERS: Order[] = [
     total: 358,
     payment_method: "COD",
     status: "Processing",
-    created_at: daysAgo(0),
+    created_at: daysAgo(0, 2),
     special_instructions: "",
   },
+  // Transaction 3: Ananya Iyer (2 products)
   {
-    id: "demo-003-eeff",
+    id: "demo-003-ee",
     customer_name: "Ananya Iyer",
     phone: "9988776655",
     address: "7, Gandhi Nagar, Coimbatore, Tamil Nadu – 641001",
     product_name: "Triple Chocolate Brownie",
-    quantity: 4,
-    total: 796,
+    quantity: 2,
+    total: 398,
     payment_method: "UPI",
     status: "Pending",
-    created_at: daysAgo(1),
+    created_at: daysAgo(1, 3),
     special_instructions: "Ring the bell twice.",
   },
   {
-    id: "demo-004-gghh",
+    id: "demo-003-ef",
+    customer_name: "Ananya Iyer",
+    phone: "9988776655",
+    address: "7, Gandhi Nagar, Coimbatore, Tamil Nadu – 641001",
+    product_name: "Red Velvet Brownie",
+    quantity: 1,
+    total: 189,
+    payment_method: "UPI",
+    status: "Pending",
+    created_at: daysAgo(1, 3),
+    special_instructions: "Ring the bell twice.",
+  },
+  // Transaction 4: Arjun Patel (1 product)
+  {
+    id: "demo-004-gg",
     customer_name: "Arjun Patel",
     phone: "9090909090",
     address: "22, Satellite, Ahmedabad, Gujarat – 380015",
@@ -116,11 +150,12 @@ const DEMO_ORDERS: Order[] = [
     total: 189,
     payment_method: "Card",
     status: "Delivered",
-    created_at: daysAgo(1),
+    created_at: daysAgo(1, 4),
     special_instructions: "",
   },
+  // Transaction 5: Meera Nair (1 product)
   {
-    id: "demo-005-iijj",
+    id: "demo-005-ii",
     customer_name: "Meera Nair",
     phone: "8800112233",
     address: "3, Indiranagar, Bengaluru, Karnataka – 560038",
@@ -129,11 +164,12 @@ const DEMO_ORDERS: Order[] = [
     total: 845,
     payment_method: "UPI",
     status: "Delivered",
-    created_at: daysAgo(2),
+    created_at: daysAgo(2, 5),
     special_instructions: "Leave at door if no one answers.",
   },
+  // Transaction 6: Karan Mehta (1 product)
   {
-    id: "demo-006-kkll",
+    id: "demo-006-kk",
     customer_name: "Karan Mehta",
     phone: "9654321098",
     address: "8, Sector 18, Noida, Uttar Pradesh – 201301",
@@ -142,24 +178,39 @@ const DEMO_ORDERS: Order[] = [
     total: 358,
     payment_method: "COD",
     status: "Cancelled",
-    created_at: daysAgo(3),
+    created_at: daysAgo(3, 6),
     special_instructions: "",
   },
+  // Transaction 7: Sneha Reddy (2 products)
   {
-    id: "demo-007-mmnn",
+    id: "demo-007-mm",
     customer_name: "Sneha Reddy",
     phone: "7700112244",
     address: "15, Banjara Hills, Hyderabad, Telangana – 500034",
     product_name: "Red Velvet Brownie",
-    quantity: 2,
-    total: 378,
+    quantity: 1,
+    total: 189,
     payment_method: "UPI",
     status: "Delivered",
-    created_at: daysAgo(3),
+    created_at: daysAgo(3, 7),
     special_instructions: "Add a small note: 'Happy Anniversary!'",
   },
   {
-    id: "demo-008-oopq",
+    id: "demo-007-mn",
+    customer_name: "Sneha Reddy",
+    phone: "7700112244",
+    address: "15, Banjara Hills, Hyderabad, Telangana – 500034",
+    product_name: "Classic Brownie",
+    quantity: 2,
+    total: 298,
+    payment_method: "UPI",
+    status: "Delivered",
+    created_at: daysAgo(3, 7),
+    special_instructions: "Add a small note: 'Happy Anniversary!'",
+  },
+  // Transaction 8: Vikram Singh (1 product)
+  {
+    id: "demo-008-oo",
     customer_name: "Vikram Singh",
     phone: "9812345678",
     address: "67, Civil Lines, Jaipur, Rajasthan – 302006",
@@ -168,11 +219,12 @@ const DEMO_ORDERS: Order[] = [
     total: 1194,
     payment_method: "Card",
     status: "Processing",
-    created_at: daysAgo(4),
+    created_at: daysAgo(4, 8),
     special_instructions: "Corporate order — invoice required.",
   },
+  // Transaction 9: Divya Krishnan (1 product)
   {
-    id: "demo-009-rrss",
+    id: "demo-009-rr",
     customer_name: "Divya Krishnan",
     phone: "9500123456",
     address: "2, Anna Nagar, Chennai, Tamil Nadu – 600040",
@@ -181,11 +233,12 @@ const DEMO_ORDERS: Order[] = [
     total: 596,
     payment_method: "UPI",
     status: "Delivered",
-    created_at: daysAgo(5),
+    created_at: daysAgo(5, 9),
     special_instructions: "",
   },
+  // Transaction 10: Rohan Desai (1 product)
   {
-    id: "demo-010-ttuu",
+    id: "demo-010-tt",
     customer_name: "Rohan Desai",
     phone: "9321654987",
     address: "19, FC Road, Pune, Maharashtra – 411005",
@@ -194,7 +247,7 @@ const DEMO_ORDERS: Order[] = [
     total: 627,
     payment_method: "COD",
     status: "Pending",
-    created_at: daysAgo(6),
+    created_at: daysAgo(6, 10),
     special_instructions: "Allergic to peanuts — please confirm no cross contamination.",
   },
 ]
@@ -226,6 +279,43 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [usingDemo, setUsingDemo] = useState(false)
 
+  // Groups DB order entries into single grouped client order transactions
+  const groupRawOrders = (raw: any[]): Order[] => {
+    const groups: Record<string, Order> = {}
+    raw.forEach((o) => {
+      // Grouping key using Name, Phone, Address and Order Minute (16 characters: YYYY-MM-DDTHH:mm)
+      const timeKey = new Date(o.created_at).toISOString().slice(0, 16)
+      const key = `${o.customer_name}_${o.phone || ""}_${o.address || ""}_${timeKey}`
+
+      if (!groups[key]) {
+        groups[key] = {
+          id: o.id,
+          ids: [o.id],
+          customer_name: o.customer_name,
+          phone: o.phone || "",
+          email: o.email || "",
+          address: o.address || "—",
+          products: [{ name: o.product_name, quantity: o.quantity, total: Number(o.total) }],
+          quantity: o.quantity,
+          total: Number(o.total),
+          payment_method: o.payment_method,
+          status: o.status,
+          created_at: o.created_at,
+          special_instructions: o.special_instructions || ""
+        }
+      } else {
+        groups[key].ids.push(o.id)
+        groups[key].products.push({ name: o.product_name, quantity: o.quantity, total: Number(o.total) })
+        groups[key].quantity += o.quantity
+        groups[key].total += Number(o.total)
+        if (o.special_instructions && !groups[key].special_instructions) {
+          groups[key].special_instructions = o.special_instructions
+        }
+      }
+    })
+    return Object.values(groups)
+  }
+
   const fetchOrders = useCallback(async () => {
     setLoading(true)
     try {
@@ -237,16 +327,14 @@ export default function OrdersPage() {
       if (error) throw error
 
       if (data && data.length > 0) {
-        setOrders(data)
+        setOrders(groupRawOrders(data))
         setUsingDemo(false)
       } else {
-        // No real orders yet — show demo data
-        setOrders(DEMO_ORDERS)
+        setOrders(groupRawOrders(DEMO_ORDERS_RAW))
         setUsingDemo(true)
       }
     } catch (err: any) {
-      // Connection failed — still show demo data
-      setOrders(DEMO_ORDERS)
+      setOrders(groupRawOrders(DEMO_ORDERS_RAW))
       setUsingDemo(true)
     } finally {
       setLoading(false)
@@ -277,18 +365,20 @@ export default function OrdersPage() {
     const matchesSearch =
       order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.product_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      order.products.some((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
     const matchesStatus = statusFilter === "All" || order.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
-  const updateStatus = async (orderId: string, newStatus: string) => {
+  const updateStatus = async (orderIds: string[], newStatus: string) => {
     if (usingDemo) {
-      // Update demo data locally only
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+        prev.map((o) => {
+          const match = o.ids.some(id => orderIds.includes(id))
+          return match ? { ...o, status: newStatus } : o
+        })
       )
-      if (selectedOrder?.id === orderId) {
+      if (selectedOrder && orderIds.includes(selectedOrder.id)) {
         setSelectedOrder((prev) => prev ? { ...prev, status: newStatus } : null)
       }
       toast.success(`Status updated to ${newStatus} (demo mode)`)
@@ -298,23 +388,29 @@ export default function OrdersPage() {
     const { error } = await supabase
       .from("orders")
       .update({ status: newStatus })
-      .eq("id", orderId)
+      .in("id", orderIds)
 
     if (error) {
       toast.error("Failed to update status: " + error.message)
     } else {
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+        prev.map((o) => {
+          const match = o.ids.some(id => orderIds.includes(id))
+          return match ? { ...o, status: newStatus } : o
+        })
       )
+      if (selectedOrder && orderIds.includes(selectedOrder.id)) {
+        setSelectedOrder((prev) => prev ? { ...prev, status: newStatus } : null)
+      }
       toast.success(`Order status updated to ${newStatus}`)
     }
   }
 
-  const deleteOrder = async (orderId: string) => {
+  const deleteOrder = async (orderIds: string[]) => {
     if (!confirm("Are you sure you want to delete this order?")) return
 
     if (usingDemo) {
-      setOrders((prev) => prev.filter((o) => o.id !== orderId))
+      setOrders((prev) => prev.filter((o) => !o.ids.some(id => orderIds.includes(id))))
       toast.success("Order removed (demo mode)")
       return
     }
@@ -322,23 +418,29 @@ export default function OrdersPage() {
     const { error } = await supabase
       .from("orders")
       .delete()
-      .eq("id", orderId)
+      .in("id", orderIds)
 
     if (error) {
       toast.error("Failed to delete order: " + error.message)
     } else {
-      setOrders((prev) => prev.filter((o) => o.id !== orderId))
+      setOrders((prev) => prev.filter((o) => !o.ids.some(id => orderIds.includes(id))))
       toast.success("Order deleted")
     }
   }
 
   const exportToCSV = () => {
     if (filteredOrders.length === 0) { toast.error("No data available to export"); return }
-    const headers = ["Order ID", "Customer Name", "Product Name", "Quantity", "Address", "Total Amount", "Payment Method", "Order Status", "Order Date"]
+    const headers = ["Order ID", "Customer Name", "Product Details", "Quantity", "Address", "Total Amount", "Payment Method", "Order Status", "Order Date"]
     const rows = filteredOrders.map(order => [
-      order.id.slice(0, 8).toUpperCase(), order.customer_name, order.product_name,
-      order.quantity, order.address || "—", order.total, order.payment_method,
-      order.status, new Date(order.created_at).toLocaleString("en-IN")
+      order.id.slice(0, 8).toUpperCase(), 
+      order.customer_name, 
+      order.products.map(p => `${p.name} (x${p.quantity})`).join("; "),
+      order.quantity, 
+      order.address || "—", 
+      order.total, 
+      order.payment_method,
+      order.status, 
+      new Date(order.created_at).toLocaleString("en-IN")
     ])
     const csvContent = [headers.join(","), ...rows.map(row => row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))].join("\n")
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
@@ -357,10 +459,14 @@ export default function OrdersPage() {
     if (filteredOrders.length === 0) { toast.error("No data available to export"); return }
     const data = filteredOrders.map(order => ({
       "Order ID": order.id.slice(0, 8).toUpperCase(),
-      "Customer Name": order.customer_name, "Product Name": order.product_name,
-      "Quantity": order.quantity, "Address": order.address || "—",
-      "Total Amount": order.total, "Payment Method": order.payment_method,
-      "Order Status": order.status, "Order Date": new Date(order.created_at).toLocaleString("en-IN")
+      "Customer Name": order.customer_name, 
+      "Product Details": order.products.map(p => `${p.name} (x${p.quantity})`).join("; "),
+      "Quantity": order.quantity, 
+      "Address": order.address || "—",
+      "Total Amount": order.total, 
+      "Payment Method": order.payment_method,
+      "Order Status": order.status, 
+      "Order Date": new Date(order.created_at).toLocaleString("en-IN")
     }))
     const worksheet = XLSX.utils.json_to_sheet(data)
     const workbook = XLSX.utils.book_new()
@@ -372,44 +478,17 @@ export default function OrdersPage() {
   const exportToPDF = () => {
     if (filteredOrders.length === 0) { toast.error("No data available to export"); return }
     
-    // Group orders placed together by same customer at the same time
-    const groups: Record<string, any> = {}
-    filteredOrders.forEach(order => {
-      // Group by customer_name, phone, address, and the minute of the order creation
-      const timeKey = new Date(order.created_at).toISOString().slice(0, 16)
-      const key = `${order.customer_name}_${order.phone || ""}_${order.address || ""}_${timeKey}`
-      
-      if (!groups[key]) {
-        groups[key] = {
-          id: order.id,
-          customer_name: order.customer_name,
-          phone: order.phone || "",
-          address: order.address || "—",
-          products: [{ name: order.product_name, qty: order.quantity }],
-          total: Number(order.total),
-          payment_method: order.payment_method,
-          status: order.status,
-          created_at: order.created_at
-        }
-      } else {
-        groups[key].products.push({ name: order.product_name, qty: order.quantity })
-        groups[key].total += Number(order.total)
-      }
-    })
-    
-    const groupedList = Object.values(groups)
-    
     const doc = new jsPDF("l", "mm", "a4")
     doc.setFontSize(18); doc.setTextColor(45, 27, 20)
     doc.text("Brownie Bliss — Orders Report", 14, 15)
     doc.setFontSize(10); doc.setTextColor(109, 93, 85)
-    doc.text(`Generated on: ${new Date().toLocaleString("en-IN")} | Total Transactions: ${groupedList.length} | Line Items: ${filteredOrders.length}`, 14, 21)
+    doc.text(`Generated on: ${new Date().toLocaleString("en-IN")} | Total Transactions: ${filteredOrders.length}`, 14, 21)
     
     const headers = ["Order ID", "Customer Details", "Delivery Address", "Product Details", "Total (Rs)", "Payment", "Status", "Date"]
     
-    const rows = groupedList.map((g: any) => {
+    const rows = filteredOrders.map(g => {
       const customerInfo = `${g.customer_name}\nPhone: ${g.phone || "—"}`
-      const productDetails = g.products.map((p: any) => `${p.name} (x${p.qty})`).join("\n")
+      const productDetails = g.products.map(p => `${p.name} (x${p.quantity})`).join("\n")
       return [
         g.id.slice(0, 8).toUpperCase(),
         customerInfo,
@@ -449,7 +528,6 @@ export default function OrdersPage() {
     doc.save(`orders_report_${new Date().toISOString().slice(0, 10)}.pdf`)
     toast.success("PDF report generated successfully")
   }
-
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -495,8 +573,7 @@ export default function OrdersPage() {
           <div>
             <p className="text-sm font-semibold text-amber-800">Demo Mode — Sample Orders</p>
             <p className="text-xs text-amber-700 mt-0.5">
-              No real orders in the database yet. Showing 10 sample orders so you can explore
-              the interface. All status changes work locally. Connect Supabase to manage real orders.
+              No real orders in the database yet. Showing 10 sample orders (including transactions with multiple brownie varieties) so you can explore the interface.
             </p>
           </div>
         </div>
@@ -574,9 +651,9 @@ export default function OrdersPage() {
                     <tr className="border-b border-border">
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Order ID</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Customer</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Product</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Qty</th>
-                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Total</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Products</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Total Qty</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Total Amount</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Payment</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Date</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
@@ -595,8 +672,16 @@ export default function OrdersPage() {
                             <p className="text-xs text-muted-foreground">{order.phone}</p>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-sm">{order.product_name}</td>
-                        <td className="py-3 px-4 text-sm">{order.quantity}</td>
+                        <td className="py-3 px-4 text-sm max-w-[220px]">
+                          <div className="space-y-0.5">
+                            {order.products.map((p, idx) => (
+                              <p key={idx} className="truncate text-xs text-foreground font-medium">
+                                {p.name} <span className="text-muted-foreground font-normal">(x{p.quantity})</span>
+                              </p>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm font-medium">{order.quantity}</td>
                         <td className="py-3 px-4 font-semibold text-sm text-chocolate">Rs. {order.total}</td>
                         <td className="py-3 px-4 text-sm">{order.payment_method}</td>
                         <td className="py-3 px-4 text-muted-foreground text-xs">{formatDate(order.created_at)}</td>
@@ -614,7 +699,7 @@ export default function OrdersPage() {
                               {["Pending", "Processing", "Delivered", "Cancelled"].map((status) => (
                                 <DropdownMenuItem
                                   key={status}
-                                  onClick={() => updateStatus(order.id, status)}
+                                  onClick={() => updateStatus(order.ids, status)}
                                 >
                                   {status}
                                 </DropdownMenuItem>
@@ -631,7 +716,7 @@ export default function OrdersPage() {
                               variant="ghost"
                               size="icon"
                               className="text-destructive hover:text-destructive"
-                              onClick={() => deleteOrder(order.id)}
+                              onClick={() => deleteOrder(order.ids)}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -681,14 +766,15 @@ export default function OrdersPage() {
                   <p className="font-medium">{selectedOrder.address || "—"}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Product</p>
-                    <p className="font-medium">{selectedOrder.product_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Quantity</p>
-                    <p className="font-medium">{selectedOrder.quantity}</p>
+                <div className="bg-muted/40 p-3.5 rounded-xl border border-border">
+                  <p className="text-xs font-bold text-cocoa uppercase tracking-wider mb-2">Items Ordered</p>
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    {selectedOrder.products.map((p, idx) => (
+                      <div key={idx} className="flex justify-between items-center text-xs">
+                        <span className="font-medium text-cocoa truncate pr-2">{p.name} (x{p.quantity})</span>
+                        <span className="font-semibold text-chocolate shrink-0">Rs. {p.total}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -716,7 +802,7 @@ export default function OrdersPage() {
                     {["Pending", "Processing", "Delivered", "Cancelled"].map((s) => (
                       <button
                         key={s}
-                        onClick={() => updateStatus(selectedOrder.id, s)}
+                        onClick={() => updateStatus(selectedOrder.ids, s)}
                         className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
                           selectedOrder.status === s
                             ? statusColors[s] + " border-current ring-1 ring-current"
@@ -741,3 +827,4 @@ export default function OrdersPage() {
     </div>
   )
 }
+

@@ -371,31 +371,85 @@ export default function OrdersPage() {
 
   const exportToPDF = () => {
     if (filteredOrders.length === 0) { toast.error("No data available to export"); return }
+    
+    // Group orders placed together by same customer at the same time
+    const groups: Record<string, any> = {}
+    filteredOrders.forEach(order => {
+      // Group by customer_name, phone, address, and the minute of the order creation
+      const timeKey = new Date(order.created_at).toISOString().slice(0, 16)
+      const key = `${order.customer_name}_${order.phone || ""}_${order.address || ""}_${timeKey}`
+      
+      if (!groups[key]) {
+        groups[key] = {
+          id: order.id,
+          customer_name: order.customer_name,
+          phone: order.phone || "",
+          address: order.address || "—",
+          products: [{ name: order.product_name, qty: order.quantity }],
+          total: Number(order.total),
+          payment_method: order.payment_method,
+          status: order.status,
+          created_at: order.created_at
+        }
+      } else {
+        groups[key].products.push({ name: order.product_name, qty: order.quantity })
+        groups[key].total += Number(order.total)
+      }
+    })
+    
+    const groupedList = Object.values(groups)
+    
     const doc = new jsPDF("l", "mm", "a4")
     doc.setFontSize(18); doc.setTextColor(45, 27, 20)
     doc.text("Brownie Bliss — Orders Report", 14, 15)
     doc.setFontSize(10); doc.setTextColor(109, 93, 85)
-    doc.text(`Generated on: ${new Date().toLocaleString("en-IN")} | Total Records: ${filteredOrders.length}`, 14, 21)
-    const headers = ["Order ID", "Customer Name", "Product Name", "Qty", "Total (Rs)", "Payment", "Status", "Date"]
-    const rows = filteredOrders.map(order => [
-      order.id.slice(0, 8).toUpperCase(), order.customer_name, order.product_name,
-      order.quantity, order.total, order.payment_method, order.status,
-      new Date(order.created_at).toLocaleDateString("en-IN")
-    ])
+    doc.text(`Generated on: ${new Date().toLocaleString("en-IN")} | Total Transactions: ${groupedList.length} | Line Items: ${filteredOrders.length}`, 14, 21)
+    
+    const headers = ["Order ID", "Customer Details", "Delivery Address", "Product Details", "Total (Rs)", "Payment", "Status", "Date"]
+    
+    const rows = groupedList.map((g: any) => {
+      const customerInfo = `${g.customer_name}\nPhone: ${g.phone || "—"}`
+      const productDetails = g.products.map((p: any) => `${p.name} (x${p.qty})`).join("\n")
+      return [
+        g.id.slice(0, 8).toUpperCase(),
+        customerInfo,
+        g.address,
+        productDetails,
+        g.total,
+        g.payment_method,
+        g.status,
+        new Date(g.created_at).toLocaleDateString("en-IN")
+      ]
+    })
+    
     autoTable(doc, {
-      startY: 26, head: [headers], body: rows, theme: "striped",
-      headStyles: { fillColor: [78, 52, 46], textColor: [255, 248, 240], fontSize: 10, fontStyle: "bold", halign: "left" },
-      bodyStyles: { fontSize: 9, textColor: [45, 27, 20], lineColor: [232, 221, 212], lineWidth: 0.1 },
+      startY: 26,
+      head: [headers],
+      body: rows,
+      theme: "striped",
+      headStyles: { fillColor: [78, 52, 46], textColor: [255, 248, 240], fontSize: 9, fontStyle: "bold", halign: "left" },
+      bodyStyles: { fontSize: 8, textColor: [45, 27, 20], lineColor: [232, 221, 212], lineWidth: 0.1, valign: "top" },
       alternateRowStyles: { fillColor: [255, 248, 240] },
-      columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 35 }, 2: { cellWidth: 45 }, 3: { cellWidth: 15, halign: "center" }, 4: { cellWidth: 22, halign: "right" }, 5: { cellWidth: 22 }, 6: { cellWidth: 22 }, 7: { cellWidth: 30 } },
+      columnStyles: {
+        0: { cellWidth: 18 }, // Order ID
+        1: { cellWidth: 32 }, // Customer Name & Phone
+        2: { cellWidth: 65 }, // Delivery Address
+        3: { cellWidth: 55 }, // Product Details
+        4: { cellWidth: 20, halign: "right" }, // Total
+        5: { cellWidth: 22 }, // Payment
+        6: { cellWidth: 22 }, // Status
+        7: { cellWidth: 24 }  // Date
+      },
       didDrawPage: (data) => {
         doc.setFontSize(9); doc.setTextColor(109, 93, 85)
         doc.text(`Page ${data.pageNumber}`, 280, 200, { align: "right" })
       }
     })
+    
     doc.save(`orders_report_${new Date().toISOString().slice(0, 10)}.pdf`)
     toast.success("PDF report generated successfully")
   }
+
 
   return (
     <div className="p-4 md:p-6 lg:p-8">

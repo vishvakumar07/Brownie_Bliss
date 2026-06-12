@@ -1,109 +1,253 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X, ShoppingBag } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Menu, X, ShoppingBag, Home, Package, Info, MessageSquare, Star } from "lucide-react"
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-  { href: "/reviews", label: "Reviews" },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/products", label: "Products", icon: Package },
+  { href: "/about", label: "About", icon: Info },
+  { href: "/contact", label: "Contact", icon: MessageSquare },
+  { href: "/reviews", label: "Reviews", icon: Star },
 ]
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
+  // close drawer on route change
+  useEffect(() => { setIsOpen(false) }, [pathname])
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-cream/80 backdrop-blur-md border-b border-border">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-serif text-2xl md:text-3xl font-bold text-chocolate">
-              Brownie Bliss
-            </span>
-          </Link>
+    <>
+      {/* ── Sticky Header ─────────────────────────────────────────── */}
+      <header
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        style={{
+          background: scrolled
+            ? "rgba(255,248,240,0.97)"
+            : "rgba(255,248,240,0.90)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          borderBottom: scrolled ? "1px solid #E8DDD4" : "1px solid transparent",
+          boxShadow: scrolled ? "0 2px 20px rgba(78,52,46,0.08)" : "none",
+        }}
+      >
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 md:h-18">
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-foreground/80 hover:text-chocolate transition-colors font-medium"
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <span
+                className="font-serif font-bold text-[#2D1B14] tracking-tight"
+                style={{ fontSize: "clamp(1.1rem, 4vw, 1.6rem)" }}
               >
-                {link.label}
+                Brownie Bliss
+              </span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-7">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="relative text-sm font-medium transition-colors duration-200"
+                  style={{
+                    color: pathname === link.href ? "#4E342E" : "#6D5D55",
+                  }}
+                >
+                  {link.label}
+                  {pathname === link.href && (
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 rounded-full"
+                      style={{ background: "#C68642" }}
+                    />
+                  )}
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop CTA */}
+            <div className="hidden md:flex items-center gap-3">
+              <Link href="/admin/login">
+                <button className="text-sm font-medium text-[#6D5D55] hover:text-[#4E342E] transition-colors px-3 py-1.5">
+                  Admin
+                </button>
               </Link>
-            ))}
-          </div>
+              <Link href="/products">
+                <button
+                  className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full transition-all duration-200 hover:-translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(135deg, #4E342E, #2D1B14)",
+                    color: "#FFF8F0",
+                    boxShadow: "0 4px 14px rgba(78,52,46,0.28)",
+                  }}
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  Order Now
+                </button>
+              </Link>
+            </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/admin/login">
-              <Button variant="ghost" size="sm">
-                Admin
-              </Button>
-            </Link>
-            <Link href="/products">
-              <Button className="bg-chocolate hover:bg-cocoa text-cream gap-2">
-                <ShoppingBag className="w-4 h-4" />
-                Order Now
-              </Button>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-foreground"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden overflow-hidden"
+            {/* Mobile: Hamburger */}
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-full transition-colors"
+              style={{
+                background: isOpen ? "rgba(78,52,46,0.10)" : "transparent",
+              }}
+              aria-label="Toggle menu"
             >
-              <div className="py-4 space-y-4">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className="block text-foreground/80 hover:text-chocolate transition-colors font-medium py-2"
+              <AnimatePresence mode="wait" initial={false}>
+                {isOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
                   >
-                    {link.label}
-                  </Link>
-                ))}
-                <div className="flex flex-col gap-2 pt-4 border-t border-border">
-                  <Link href="/admin/login" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full">
-                      Admin Login
-                    </Button>
-                  </Link>
-                  <Link href="/products" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full bg-chocolate hover:bg-cocoa text-cream gap-2">
-                      <ShoppingBag className="w-4 h-4" />
-                      Order Now
-                    </Button>
-                  </Link>
-                </div>
+                    <X className="w-5 h-5 text-[#2D1B14]" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    <Menu className="w-5 h-5 text-[#2D1B14]" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      {/* ── Mobile Drawer Overlay ──────────────────────────────────── */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.22 }}
+              className="fixed inset-0 z-40 md:hidden"
+              style={{ background: "rgba(45,27,20,0.45)", backdropFilter: "blur(2px)" }}
+              onClick={() => setIsOpen(false)}
+            />
+
+            {/* Drawer Panel */}
+            <motion.div
+              key="drawer"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 340, damping: 34 }}
+              className="fixed top-0 right-0 bottom-0 z-50 w-72 md:hidden flex flex-col"
+              style={{ background: "#FFF8F0" }}
+            >
+              {/* Drawer Header */}
+              <div
+                className="flex items-center justify-between px-5 h-14 flex-shrink-0"
+                style={{ borderBottom: "1px solid #E8DDD4" }}
+              >
+                <span className="font-serif font-bold text-[#2D1B14] text-lg">Menu</span>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full"
+                  style={{ background: "rgba(78,52,46,0.08)" }}
+                >
+                  <X className="w-4 h-4 text-[#4E342E]" />
+                </button>
+              </div>
+
+              {/* Nav Links */}
+              <nav className="flex-1 overflow-y-auto py-4 px-3">
+                {navLinks.map((link, i) => {
+                  const Icon = link.icon
+                  const active = pathname === link.href
+                  return (
+                    <motion.div
+                      key={link.href}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.06, duration: 0.28 }}
+                    >
+                      <Link
+                        href={link.href}
+                        className="flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1 transition-all duration-150 active:scale-[0.98]"
+                        style={{
+                          background: active ? "rgba(78,52,46,0.08)" : "transparent",
+                          color: active ? "#4E342E" : "#6D5D55",
+                        }}
+                      >
+                        <div
+                          className="w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0"
+                          style={{
+                            background: active ? "rgba(78,52,46,0.12)" : "rgba(78,52,46,0.05)",
+                          }}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="font-semibold text-sm">{link.label}</span>
+                        {active && (
+                          <div
+                            className="ml-auto w-1.5 h-1.5 rounded-full"
+                            style={{ background: "#C68642" }}
+                          />
+                        )}
+                      </Link>
+                    </motion.div>
+                  )
+                })}
+              </nav>
+
+              {/* Drawer Footer */}
+              <div className="p-4 flex flex-col gap-2" style={{ borderTop: "1px solid #E8DDD4" }}>
+                <Link href="/products" onClick={() => setIsOpen(false)}>
+                  <button
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]"
+                    style={{
+                      background: "linear-gradient(135deg, #4E342E, #2D1B14)",
+                      color: "#FFF8F0",
+                      boxShadow: "0 4px 14px rgba(78,52,46,0.28)",
+                    }}
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    Order Now
+                  </button>
+                </Link>
+                <Link href="/admin/login" onClick={() => setIsOpen(false)}>
+                  <button
+                    className="w-full py-3 rounded-xl font-medium text-sm text-[#6D5D55] transition-all"
+                    style={{ background: "rgba(78,52,46,0.05)" }}
+                  >
+                    Admin Login
+                  </button>
+                </Link>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
-    </header>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   )
 }

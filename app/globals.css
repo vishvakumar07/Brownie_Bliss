@@ -170,3 +170,14 @@ html {
   background: var(--caramel);
   color: var(--cocoa);
 }
+
+/* Hide scrollbar but keep scroll */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Prevent tap highlight on mobile */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Touch-friendly active states */
+button:active { transition: transform 0.1s ease; }
+

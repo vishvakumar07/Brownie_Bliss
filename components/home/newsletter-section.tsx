@@ -3,8 +3,6 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Mail, ArrowRight, CheckCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 
 export function NewsletterSection() {
@@ -22,57 +20,65 @@ export function NewsletterSection() {
   }
 
   return (
-    <section className="py-10 md:py-14 bg-chocolate">
+    <section className="py-7 md:py-10 bg-chocolate">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-3xl mx-auto text-center"
+          className="max-w-xl mx-auto"
         >
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gold/20 mb-4">
-            <Mail className="w-6 h-6 text-gold" />
+          {/* Top row: icon + heading */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(212,163,115,0.20)" }}>
+              <Mail className="w-4 h-4 text-[#D4A373]" />
+            </div>
+            <h2 className="font-serif text-lg md:text-2xl font-bold text-cream">
+              Stay in the Loop
+            </h2>
           </div>
 
-          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-cream text-balance">
-            Stay in the Loop
-          </h2>
-          
-          <p className="mt-3 text-cream/80 text-sm md:text-base max-w-xl mx-auto text-pretty">
-            Subscribe to get exclusive offers, new flavor announcements, and special discounts delivered to your inbox.
+          <p className="text-cream/70 text-xs md:text-sm mb-4 leading-relaxed">
+            Exclusive offers & new flavours, straight to your inbox.
           </p>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-8 flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-            <Input
+          {/* Form — single row on all screen sizes */}
+          <form onSubmit={handleSubmit} className="flex gap-2">
+            <input
               type="email"
-              placeholder="Enter your email"
+              placeholder="Your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/50 focus:border-gold"
               required
+              className="flex-1 min-w-0 bg-cream/10 border border-cream/20 text-cream placeholder:text-cream/45 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-[#D4A373] transition-colors"
             />
-            <Button 
-              type="submit" 
-              className="bg-gold hover:bg-caramel text-cocoa font-semibold gap-2"
+            <button
+              type="submit"
               disabled={isSubmitted}
+              className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-semibold text-xs transition-all duration-200 active:scale-95 disabled:opacity-70"
+              style={{
+                background: isSubmitted ? "#2D6A4F" : "#D4A373",
+                color: "#2D1B14",
+                boxShadow: "0 4px 12px rgba(212,163,115,0.30)",
+              }}
             >
               {isSubmitted ? (
                 <>
                   <CheckCircle className="w-4 h-4" />
-                  Subscribed
+                  Done!
                 </>
               ) : (
                 <>
                   Subscribe
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
-            </Button>
+            </button>
           </form>
 
-          <p className="mt-4 text-cream/60 text-sm">
-            No spam, unsubscribe anytime. We respect your privacy.
+          <p className="mt-2.5 text-cream/45 text-[10px]">
+            No spam — unsubscribe anytime.
           </p>
         </motion.div>
       </div>

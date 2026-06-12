@@ -103,8 +103,8 @@ export function HeroSection() {
       onMouseLeave={() => { mouseX.set(0); mouseY.set(0) }}
       className="relative overflow-hidden"
       style={{
-        minHeight: "100svh",
-        paddingTop: "5rem",
+        minHeight: "clamp(580px, 75svh, 100svh)",
+        paddingTop: "3.5rem",
         background: "linear-gradient(150deg, #FDF8F2 0%, #FAF3E8 45%, #F5ECD8 75%, #EFE4CC 100%)",
       }}
     >
@@ -136,23 +136,23 @@ export function HeroSection() {
       {/* ── Main layout ─────────────────────────────────────────────────── */}
       <div
         className="relative mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-12 flex items-center"
-        style={{ minHeight: "calc(100svh - 5rem)" }}
+        style={{ minHeight: "calc(clamp(580px,75svh,100svh) - 3.5rem)" }}
       >
-        <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center gap-8 lg:gap-12 w-full py-12 lg:py-0">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-center gap-4 lg:gap-12 w-full py-6 lg:py-0">
 
           {/* ════════════ LEFT — Text ════════════ */}
           <motion.div
             initial={{ opacity: 0, y: 36 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
-            className="flex flex-col items-center text-center lg:items-start lg:text-left order-2 lg:order-1"
+            className="flex flex-col items-center text-center lg:items-start lg:text-left order-2 lg:order-1 mt-2 lg:mt-0"
           >
             {/* Overline badge */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.58, duration: 0.5 }}
-              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-6"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-3"
               style={{
                 background: "linear-gradient(135deg, rgba(198,134,66,0.13), rgba(212,163,115,0.08))",
                 border: "1px solid rgba(198,134,66,0.26)",
@@ -199,7 +199,7 @@ export function HeroSection() {
                 width: 56, height: 1,
                 background: "linear-gradient(90deg, #C68642, transparent)",
                 transformOrigin: "left center",
-                marginTop: 18, marginBottom: 18,
+                marginTop: 10, marginBottom: 10,
               }}
             />
 
@@ -224,11 +224,11 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.96, duration: 0.6 }}
-              className="mt-8 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 w-full sm:w-auto"
+              className="mt-5 flex flex-row items-center justify-center lg:justify-start gap-3 w-full"
             >
-              <Link href="/products" className="w-full sm:w-auto">
+              <Link href="/products" className="flex-1 sm:flex-none">
                 <button
-                  className="group w-full sm:w-auto inline-flex items-center justify-center gap-2.5 rounded-full px-7 py-3.5 text-sm font-semibold transition-all duration-300"
+                  className="group w-full inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-all duration-300 active:scale-[0.97]"
                   style={{
                     background: "linear-gradient(135deg, #4E342E 0%, #2D1B14 100%)",
                     color: "#FFF8F0",
@@ -246,18 +246,18 @@ export function HeroSection() {
                     el.style.boxShadow = "0 4px 20px rgba(78,52,46,0.28)"
                   }}
                 >
-                  <span>Explore Collection</span>
-                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  <span>Order Now</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                 </button>
               </Link>
 
-              <Link href="/about" className="w-full sm:w-auto">
+              <Link href="/about" className="flex-1 sm:flex-none">
                 <button
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold transition-all duration-300"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-all duration-300 active:scale-[0.97]"
                   style={{
                     background: "transparent",
                     color: "#4E342E",
-                    border: "1.5px solid rgba(78,52,46,0.22)",
+                    border: "1.5px solid rgba(78,52,46,0.28)",
                     letterSpacing: "0.04em",
                   }}
                   onMouseEnter={e => {
@@ -268,7 +268,7 @@ export function HeroSection() {
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget as HTMLButtonElement
-                    el.style.borderColor = "rgba(78,52,46,0.22)"
+                    el.style.borderColor = "rgba(78,52,46,0.28)"
                     el.style.background   = "transparent"
                     el.style.transform    = "translateY(0)"
                   }}
@@ -278,26 +278,33 @@ export function HeroSection() {
               </Link>
             </motion.div>
 
-            {/* Stats row */}
+            {/* Stats row — 3 equal columns */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.15, duration: 0.7 }}
-              className="mt-10 flex items-center justify-center lg:justify-start gap-8 w-full"
+              className="mt-5 grid grid-cols-3 gap-0 w-full rounded-2xl overflow-hidden border border-[rgba(78,52,46,0.12)]"
+              style={{ background: "rgba(255,248,240,0.70)", backdropFilter: "blur(12px)" }}
             >
               {[
                 { value: "500+", label: "Customers" },
                 { value: "4.9★", label: "Rating" },
                 { value: "100%", label: "Homemade" },
               ].map((s, i) => (
-                <div key={i} className="flex flex-col items-center lg:items-start gap-0.5">
+                <div
+                  key={i}
+                  className="flex flex-col items-center justify-center py-3"
+                  style={{
+                    borderRight: i < 2 ? "1px solid rgba(78,52,46,0.12)" : "none",
+                  }}
+                >
                   <span
                     className="font-serif font-bold"
-                    style={{ fontSize: "clamp(1.35rem, 3vw, 1.7rem)", color: "#2D1B14", letterSpacing: "-0.02em" }}
+                    style={{ fontSize: "clamp(1.1rem, 4vw, 1.5rem)", color: "#2D1B14", letterSpacing: "-0.02em" }}
                   >
                     {s.value}
                   </span>
-                  <span style={{ fontSize: "0.68rem", color: "#6D5D55", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                  <span style={{ fontSize: "0.62rem", color: "#6D5D55", letterSpacing: "0.07em", textTransform: "uppercase" }}>
                     {s.label}
                   </span>
                 </div>
@@ -308,7 +315,7 @@ export function HeroSection() {
           {/* ════════════ RIGHT — Brownie Scene ════════════ */}
           <div
             className="relative order-1 lg:order-2"
-            style={{ height: "clamp(340px, 54vw, 620px)" }}
+            style={{ height: "clamp(220px, 45vw, 560px)" }}
           >
             {/* Warm radial glow behind brownie */}
             <div

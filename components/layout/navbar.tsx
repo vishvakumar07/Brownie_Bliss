@@ -5,6 +5,9 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, ShoppingBag, Home, Package, Info, MessageSquare, Star } from "lucide-react"
+import { CartButton } from "@/components/cart/cart-button"
+import { CartDrawer } from "@/components/cart/cart-drawer"
+import { MobileCartBar } from "@/components/cart/mobile-cart-bar"
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -82,13 +85,14 @@ export function Navbar() {
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-3">
               <Link href="/admin/login">
-                <button className="text-sm font-medium text-[#6D5D55] hover:text-[#4E342E] transition-colors px-3 py-1.5">
+                <button className="text-sm font-medium text-[#6D5D55] hover:text-[#4E342E] transition-colors px-3 py-1.5 cursor-pointer">
                   Admin
                 </button>
               </Link>
+              <CartButton />
               <Link href="/products">
                 <button
-                  className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full transition-all duration-200 hover:-translate-y-0.5"
+                  className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
                   style={{
                     background: "linear-gradient(135deg, #4E342E, #2D1B14)",
                     color: "#FFF8F0",
@@ -101,39 +105,43 @@ export function Navbar() {
               </Link>
             </div>
 
-            {/* Mobile: Hamburger */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-full transition-colors"
-              style={{
-                background: isOpen ? "rgba(78,52,46,0.10)" : "transparent",
-              }}
-              aria-label="Toggle menu"
-            >
-              <AnimatePresence mode="wait" initial={false}>
-                {isOpen ? (
-                  <motion.div
-                    key="close"
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <X className="w-5 h-5 text-[#2D1B14]" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="menu"
-                    initial={{ rotate: 90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: -90, opacity: 0 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <Menu className="w-5 h-5 text-[#2D1B14]" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
+            {/* Mobile Actions: Cart + Hamburger */}
+            <div className="flex md:hidden items-center gap-2">
+              <CartButton />
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="relative w-10 h-10 flex items-center justify-center rounded-full transition-colors cursor-pointer"
+                style={{
+                  background: isOpen ? "rgba(78,52,46,0.10)" : "transparent",
+                }}
+                aria-label="Toggle menu"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {isOpen ? (
+                    <motion.div
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <X className="w-5 h-5 text-[#2D1B14]" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="menu"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.18 }}
+                    >
+                      <Menu className="w-5 h-5 text-[#2D1B14]" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+            </div>
+
           </div>
         </nav>
       </header>
@@ -172,7 +180,7 @@ export function Navbar() {
                 <span className="font-serif font-bold text-[#2D1B14] text-lg">Menu</span>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full"
+                  className="w-8 h-8 flex items-center justify-center rounded-full cursor-pointer"
                   style={{ background: "rgba(78,52,46,0.08)" }}
                 >
                   <X className="w-4 h-4 text-[#4E342E]" />
@@ -224,7 +232,7 @@ export function Navbar() {
               <div className="p-4 flex flex-col gap-2" style={{ borderTop: "1px solid #E8DDD4" }}>
                 <Link href="/products" onClick={() => setIsOpen(false)}>
                   <button
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] cursor-pointer"
                     style={{
                       background: "linear-gradient(135deg, #4E342E, #2D1B14)",
                       color: "#FFF8F0",
@@ -237,7 +245,7 @@ export function Navbar() {
                 </Link>
                 <Link href="/admin/login" onClick={() => setIsOpen(false)}>
                   <button
-                    className="w-full py-3 rounded-xl font-medium text-sm text-[#6D5D55] transition-all"
+                    className="w-full py-3 rounded-xl font-medium text-sm text-[#6D5D55] transition-all cursor-pointer"
                     style={{ background: "rgba(78,52,46,0.05)" }}
                   >
                     Admin Login
@@ -248,6 +256,11 @@ export function Navbar() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Global Cart Elements */}
+      <CartDrawer />
+      <MobileCartBar />
     </>
   )
 }
+

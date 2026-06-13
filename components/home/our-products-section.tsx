@@ -3,96 +3,111 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Star, Plus, ArrowRight } from "lucide-react"
-import { toast } from "sonner"
-import Image from "next/image"
+import { ArrowRight } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { ProductCard, Product } from "@/components/products/product-card"
 
-const allProducts = [
+const allProducts: Product[] = [
   {
-    id: 1,
+    id: "1",
     name: "Classic Brownie",
     slug: "classic-brownie",
     description: "Our signature rich, fudgy chocolate brownie with a perfect crackly top. Made with premium cocoa and Belgian chocolate.",
     price: 149,
     rating: 0,
+    reviews: 0,
+    category: "classic",
     badge: "Best Seller",
     inStock: true,
     image: "/Classic-Brownie.webp",
   },
   {
-    id: 2,
+    id: "2",
     name: "Nutella Brownie",
     slug: "nutella-brownie",
     description: "Decadent brownie swirled with creamy Nutella hazelnut spread. A chocolate lover's dream come true.",
     price: 179,
     rating: 0,
+    reviews: 0,
+    category: "premium",
     badge: "Popular",
     inStock: true,
     image: "/Nutela-Brownie.webp",
   },
   {
-    id: 3,
+    id: "3",
     name: "Walnut Brownie",
     slug: "walnut-brownie",
     description: "Chunky California walnuts in our signature chocolate base. Perfect balance of crunch and fudge.",
     price: 169,
     rating: 0,
+    reviews: 0,
+    category: "classic",
     badge: "Premium",
     inStock: true,
     image: "/Wallnut-Brownie.jpg",
   },
   {
-    id: 4,
+    id: "4",
     name: "Triple Chocolate Brownie",
     slug: "triple-chocolate-brownie",
     description: "Three types of chocolate — dark, milk, and white — for the ultimate chocolate indulgence.",
     price: 199,
     rating: 0,
+    reviews: 0,
+    category: "premium",
     badge: "Chef Special",
     inStock: true,
     image: "/Triple-Chocolate.jpg",
   },
   {
-    id: 5,
+    id: "5",
     name: "Salted Caramel Brownie",
     slug: "salted-caramel-brownie",
     description: "Rich chocolate brownie drizzled with homemade salted caramel. Sweet meets salty perfection.",
     price: 189,
     rating: 0,
+    reviews: 0,
+    category: "special",
     badge: "New",
     inStock: true,
     image: "/salted-caramel-brownie.jpg",
   },
   {
-    id: 6,
+    id: "6",
     name: "Peanut Butter Brownie",
     slug: "peanut-butter-brownie",
     description: "Creamy peanut butter swirled into our classic brownie. A heavenly combination.",
     price: 179,
     rating: 0,
+    reviews: 0,
+    category: "classic",
     badge: null,
     inStock: true,
     image: "/Peanut-Butter-Brownie.jpg",
   },
   {
-    id: 7,
+    id: "7",
     name: "Cookie Dough Brownie",
     slug: "cookie-dough-brownie",
     description: "Edible cookie dough chunks baked into a rich chocolate brownie. Two desserts in one!",
     price: 209,
     rating: 0,
+    reviews: 0,
+    category: "special",
     badge: "Limited",
     inStock: true,
     image: "/Cookie-Dough-Brownie.jpg",
   },
   {
-    id: 8,
+    id: "8",
     name: "Red Velvet Brownie",
     slug: "red-velvet-brownie",
     description: "A unique twist — red velvet brownie with cream cheese swirl. Elegant and delicious.",
     price: 189,
     rating: 0,
+    reviews: 0,
+    category: "premium",
     badge: "Seasonal",
     inStock: true,
     image: "/Red-Velvet-Brownie.jpg",
@@ -113,7 +128,7 @@ const cardVariant = {
 }
 
 export function OurProductsSection() {
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
     async function loadProducts() {
@@ -148,6 +163,8 @@ export function OurProductsSection() {
                 description: p.description,
                 price: Number(p.price),
                 rating: stats ? Number((stats.sum / stats.count).toFixed(1)) : 0,
+                reviews: stats ? stats.count : 0,
+                category: p.category || "classic",
                 badge: p.stock === 0 ? "Out of Stock" : p.badge,
                 inStock: p.stock > 0,
                 image: p.image_url ? p.image_url.split(',')[0].trim() : "",
@@ -166,12 +183,6 @@ export function OurProductsSection() {
     ? products 
     : allProducts
 
-  const handleAdd = (name: string) => {
-    toast.success(`${name} added!`, {
-      description: "Go to the Products page to manage your order.",
-    })
-  }
-
   return (
     <section className="py-6 md:py-14 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -183,10 +194,10 @@ export function OurProductsSection() {
           viewport={{ once: true }}
           className="text-center mb-4 md:mb-10"
         >
-          <p className="text-caramel font-medium mb-2 uppercase tracking-wide text-xs">
+          <p className="text-[#C68642] font-medium mb-2 uppercase tracking-wide text-xs">
             Fresh &amp; Handcrafted
           </p>
-          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-cocoa text-balance">
+          <h2 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold text-[#2D1B14] text-balance">
             Our Products
           </h2>
           <p className="mt-2 text-muted-foreground max-w-2xl mx-auto text-pretty text-xs md:text-sm">
@@ -206,96 +217,9 @@ export function OurProductsSection() {
             <motion.div
               key={product.id}
               variants={cardVariant}
-              whileHover={{ y: -4 }}
-              className="flex"
+              className="flex w-full"
             >
-              {/* ── Card bounding box ── */}
-              <div className="group w-full flex flex-col rounded-2xl overflow-hidden bg-white border border-[#E8DDD4] shadow-[0_2px_12px_rgba(0,0,0,0.07)] hover:shadow-[0_8px_28px_rgba(0,0,0,0.13)] transition-shadow duration-300">
-
-                {/* IMAGE AREA — 1:1 square, neutral bg, no dark overlay */}
-                <Link
-                  href={`/products/${product.slug}`}
-                  className="relative w-full flex-shrink-0 overflow-hidden block bg-[#FAF6F1] aspect-square"
-                >
-                  {product.image ? (
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-contain transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 640px) 50vw, 25vw"
-                    />
-                  ) : (
-                    /* product name fallback */
-                    <div className="absolute inset-0 flex items-center justify-center px-5 bg-gradient-to-br from-[#F5EDE6] to-[#EFE4CC]">
-                      <span className="font-serif text-[#4E342E]/60 text-lg font-bold text-center leading-snug select-none">
-                        {product.name}
-                      </span>
-                    </div>
-                  )}
-                  {/* badge */}
-                  {product.badge && (
-                    <span className="absolute top-3 left-3 bg-[#D4A373] text-[#2D1B14] text-[11px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm">
-                      {product.badge}
-                    </span>
-                  )}
-                  {/* out of stock */}
-                  {!product.inStock && (
-                    <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-                      <span className="bg-white text-[#2D1B14] text-sm font-semibold px-4 py-1.5 rounded-full shadow border border-[#E8DDD4]">
-                        Out of Stock
-                      </span>
-                    </div>
-                  )}
-                  {/* hover overlay */}
-                  {product.inStock && (
-                    <div className="absolute inset-0 bg-[#2D1B14]/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                      <span className="bg-white text-[#2D1B14] hover:bg-[#D4A373] text-sm font-semibold px-5 py-2 rounded-full shadow transition-colors duration-150">
-                        View &amp; Order
-                      </span>
-                    </div>
-                  )}
-                </Link>
-
-                {/* CONTENT AREA */}
-                <div className="flex flex-col flex-1 px-4 pt-3 pb-4 bg-white">
-                  {/* name + rating */}
-                  <div className="flex items-start justify-between gap-2 mb-1.5 font-sans">
-                    <h3 className="font-semibold text-[#2D1B14] text-sm leading-snug line-clamp-1 flex-1 hover:underline">
-                      <Link href={`/products/${product.slug}`}>{product.name}</Link>
-                    </h3>
-                    <div className="flex items-center gap-1 shrink-0 mt-0.5">
-                      <Star className="w-3.5 h-3.5 fill-[#D4A373] text-[#D4A373]" />
-                      <span className="text-xs font-semibold text-[#2D1B14]">
-                        {product.rating > 0 ? product.rating : "—"}
-                      </span>
-                    </div>
-                  </div>
-                  {/* description */}
-                  <p className="text-[#6D5D55] text-xs leading-relaxed line-clamp-2 flex-1 mb-3">
-                    {product.description}
-                  </p>
-                  {/* divider */}
-                  <div className="h-px bg-[#E8DDD4] mb-3" />
-                  {/* price + add */}
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className="font-sans font-bold text-[#2D1B14]"
-                      style={{ fontSize: "0.95rem", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}
-                    >
-                      ₹{product.price}
-                    </span>
-                    <button
-                      onClick={() => handleAdd(product.name)}
-                      disabled={!product.inStock}
-                      className="flex items-center gap-1.5 bg-[#4E342E] hover:bg-[#2D1B14] disabled:opacity-40 disabled:cursor-not-allowed text-[#FFF8F0] text-xs font-semibold px-3.5 py-2 rounded-full transition-colors duration-150 shadow-sm"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      Add
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ProductCard product={product} />
             </motion.div>
           ))}
         </motion.div>
@@ -320,3 +244,4 @@ export function OurProductsSection() {
     </section>
   )
 }
+

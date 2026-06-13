@@ -11,6 +11,8 @@ import { supabase } from "@/lib/supabase"
 import { Navbar } from "@/components/layout/navbar"
 import { Footer } from "@/components/layout/footer"
 import useEmblaCarousel from "embla-carousel-react"
+import { useCart } from "@/hooks/use-cart"
+
 
 // ─── Interfaces ──────────────────────────────────────────────────
 interface Product {
@@ -156,8 +158,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [error, setError] = useState<string | null>(null)
   const [activeAccordion, setActiveAccordion] = useState<string | null>("description")
   
-  // Cart state
-  const [cart, setCart] = useState<CartItem[]>([])
+  // Cart hook
+  const { addItem, items } = useCart()
+
 
   // Review Drawer state
   const [isReviewDrawerOpen, setIsReviewDrawerOpen] = useState(false)
@@ -292,54 +295,26 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     }
   }
 
-  // Load cart on mount
+  // Load product on mount
   useEffect(() => {
     loadProductData()
-    const savedCart = localStorage.getItem("brownie_cart")
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart))
-      } catch (e) {
-        // ignore
-      }
-    }
   }, [slug])
-
-  // Sync/save cart helper
-  const saveCart = (newCart: CartItem[]) => {
-    setCart(newCart)
-    localStorage.setItem("brownie_cart", JSON.stringify(newCart))
-  }
 
   const handleAddToCart = (directCheckout = false) => {
     if (!product) return
 
-    const cartItemProduct = {
+    addItem({
       id: product.id,
       name: product.name,
-      slug: product.slug,
       price: product.price,
       image: product.image_url ? product.image_url.split(',')[0].trim() : "",
-    }
-
-    const existingIndex = cart.findIndex((item) => item.product.id === product.id)
-    let updatedCart = [...cart]
-
-    if (existingIndex > -1) {
-      updatedCart[existingIndex].quantity += qty
-    } else {
-      updatedCart.push({ product: cartItemProduct, quantity: qty })
-    }
-
-    saveCart(updatedCart)
-    toast.success(`Added ${qty} × ${product.name} to cart!`, {
-      style: { background: "#4E342E", color: "#FFF8F0" },
-    })
+    }, qty)
 
     if (directCheckout) {
       router.push("/checkout")
     }
   }
+
 
   // Submit dynamic Supabase review
   const handleReviewSubmit = async (e: React.FormEvent) => {
@@ -382,9 +357,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     setActiveAccordion(activeAccordion === section ? null : section)
   }
 
-  // Cart Totals for Sticky Bar
-  const cartTotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+  // Cart calculations for details
+  const cartTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
+
 
   // Calculations for average rating
   const reviewCount = reviews.length
@@ -922,33 +898,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         </section>
       </div>
 
-      {/* ── SECTION 7: Sticky Bottom Cart Bar ── */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#EDE5DC] px-4 py-3 pb-safe flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(78,52,46,0.06)] font-sans"
-        style={{
-          boxShadow: "0 -4px 18px rgba(45,27,20,0.08)",
-        }}
-      >
-        <div className="flex flex-col min-w-0">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8B7E74] leading-tight">
-            Cart Total
-          </span>
-          <span className="font-sans font-bold text-[18px] text-cocoa leading-tight truncate">
-            ₹{cartTotal}
-          </span>
-          <span className="text-[9px] text-[#8B7E74] leading-none">
-            {cartCount} item{cartCount !== 1 ? "s" : ""}
-          </span>
-        </div>
+      {/* Page specific checkout bar removed in favor of global MobileCartBar */}
 
-        <button
-          onClick={() => router.push("/checkout")}
-          className="bg-[#4E342E] hover:bg-[#2D1B14] text-[#FFF8F0] font-bold text-xs py-3 px-6 rounded-full flex items-center gap-1.5 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
-        >
-          Checkout
-          <ShoppingBag className="w-3.5 h-3.5" />
-        </button>
-      </div>
 
       {/* ── Custom Slide-Up Review Drawer ── */}
       <AnimatePresence>
